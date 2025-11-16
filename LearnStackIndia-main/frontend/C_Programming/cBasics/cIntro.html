@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Introduction to C Programming - LearnStackIndia</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        (function () {
+            // Set theme from local storage
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* All CSS variables and styles from bubbleSort.html */
+        :root {
+            --bg-primary-light: #f8fafc;
+            --bg-secondary-light: #ffffff;
+            --bg-tertiary-light: #f1f5f9;
+            --text-primary-light: #1e293b;
+            --text-secondary-light: #475569;
+            --text-muted-light: #64748b;
+            --accent-primary: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-light: #dbeafe;
+            --accent-gradient: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --error: #ef4444;
+            --error-light: #fee2e2;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --glow: 0 0 20px rgba(59, 130, 246, 0.3);
+            --border-color: #e2e8f0;
+            --border-radius-sm: 4px;
+            --border-radius: 8px;
+            --border-radius-lg: 12px;
+            --border-radius-xl: 16px;
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+            --transition-fast: 0.15s ease-in-out;
+            --transition-normal: 0.3s ease-in-out;
+            --transition-slow: 0.5s ease-in-out;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-2xl: 1.5rem;
+            --font-size-3xl: 1.875rem;
+            --font-size-4xl: 2.25rem;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary-light: #0f172a;
+            --bg-secondary-light: #1e293b;
+            --bg-tertiary-light: #334155;
+            --text-primary-light: #f1f5f9;
+            --text-secondary-light: #cbd5e1;
+            --text-muted-light: #94a3b8;
+            --border-color: #475569;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg-primary-light);
+            color: var(--text-primary-light);
+            font-family: var(--font-family);
+            line-height: 1.6;
+            transition: background-color var(--transition-normal), color var(--transition-normal);
+            min-height: 100vh;
+        }
+
+        /* Logout Button */
+        .logout-container { position: fixed; top: 80px; right: 20px; z-index: 1000; }
+        #logout-btn {
+            background: var(--bg-secondary-light); border: 1px solid var(--border-color); border-radius: 50%;
+            width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 18px; color: var(--error); box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+        }
+        #logout-btn:hover {
+            transform: translateY(-2px) scale(1.05); box-shadow: var(--shadow-lg);
+            background-color: var(--error-light);
+        }
+        [data-theme="dark"] #logout-btn:hover { background-color: rgba(239, 68, 68, 0.1); }
+
+        /* Theme Toggle */
+        .theme-toggle { position: fixed; top: 20px; right: 20px; z-index: 1000; }
+        #theme-toggle-btn {
+            background: var(--bg-secondary-light); border: 1px solid var(--border-color); border-radius: 50%;
+            width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 20px; box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+        }
+        #theme-toggle-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+        /* Container */
+        .container { max-width: 1200px; margin: 0 auto; padding: var(--spacing-xl); }
+        
+        /* Explanation Section Styles (from bubbleSort.html) */
+        .explanation-section {
+            background: var(--bg-secondary-light); border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-xl); padding: var(--spacing-2xl);
+            margin-top: var(--spacing-2xl); margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-lg); position: relative; overflow: hidden;
+            display: flex; flex-direction: column; gap: var(--spacing-lg);
+        }
+        .explanation-section::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+            background: var(--accent-gradient);
+        }
+        .explanation-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            flex-wrap: wrap; gap: var(--spacing-md);
+        }
+        .explanation-title-wrapper { display: flex; align-items: center; gap: var(--spacing-md); }
+        .explanation-emoji { font-size: 3.5rem; line-height: 1; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        .explanation-title-content { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+        .explanation-title {
+            font-size: var(--font-size-3xl); font-weight: 700;
+            background: var(--accent-gradient); -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; background-clip: text; margin: 0;
+        }
+        .explanation-subtitle { font-size: var(--font-size-base); color: var(--text-secondary-light); margin: 0; }
+        .explanation-card {
+            background: var(--bg-tertiary-light); border-radius: var(--border-radius-lg);
+            border: 2px solid transparent; padding: var(--spacing-xl);
+            display: flex; flex-direction: column; gap: var(--spacing-md);
+            transition: all var(--transition-normal); position: relative; overflow: hidden;
+            max-width: 100%;
+        }
+        .explanation-card:hover {
+            transform: translateY(-4px); box-shadow: var(--shadow-xl); border-color: var(--accent-primary);
+        }
+        .explanation-card>* { position: relative; z-index: 1; }
+        .card-header { display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm); }
+        .card-icon {
+            width: 48px; height: 48px; border-radius: var(--border-radius);
+            display: flex; align-items: center; justify-content: center;
+            transition: all var(--transition-normal); flex-shrink: 0;
+        }
+        .card-icon svg, .card-icon i { width: 24px; height: 24px; font-size: 24px; line-height: 1; }
+        .icon-blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .icon-green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .icon-orange { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .icon-purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+        .explanation-card:hover .card-icon { transform: scale(1.1) rotate(5deg); }
+        .card-title { font-size: var(--font-size-lg); font-weight: 700; color: var(--text-primary-light); margin: 0; flex: 1; }
+        .card-text { font-size: var(--font-size-sm); color: var(--text-secondary-light); line-height: 1.7; margin: 0; }
+        .card-text p { margin-bottom: var(--spacing-sm); }
+        .card-text p:last-child { margin-bottom: 0; }
+        .card-text ul, .card-text ol { list-style-position: outside; padding-left: var(--spacing-lg); margin-top: var(--spacing-sm); }
+        .card-text li { margin-bottom: var(--spacing-xs); }
+        .highlight-text {
+            color: var(--accent-primary); font-weight: 600; background: rgba(59, 130, 246, 0.1);
+            padding: 2px 6px; border-radius: var(--border-radius-sm);
+        }
+        .inline-code {
+            font-family: 'Monaco', 'Menlo', monospace; background: var(--bg-quaternary-light);
+            color: var(--accent-primary); padding: 3px 6px; border-radius: var(--border-radius-sm);
+            font-size: 0.9em; border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        [data-theme="dark"] .inline-code { background-color: #475569; border-color: rgba(147, 197, 253, 0.2); color: #93c5fd; }
+        
+        /* Navigation Box (from bubbleLogic.html) */
+        .quiz-redirect-box {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+            border-radius: var(--border-radius-lg); padding: var(--spacing-lg);
+            margin-top: var(--spacing-lg); box-shadow: var(--shadow-lg);
+            transition: all var(--transition-normal); position: relative; overflow: hidden;
+        }
+        .quiz-redirect-box:hover { transform: translateY(-2px); box-shadow: var(--shadow-xl), var(--glow); }
+        .redirect-content { display: flex; align-items: center; gap: var(--spacing-lg); position: relative; z-index: 1; }
+        .redirect-icon {
+            font-size: var(--font-size-3xl); background: rgba(255, 255, 255, 0.2);
+            width: 60px; height: 60px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; flex-shrink: 0; color: white;
+        }
+        .redirect-text { flex-grow: 1; text-align: left; color: white; }
+        .redirect-text h4 { font-size: var(--font-size-lg); font-weight: 700; margin-bottom: var(--spacing-xs); color: white; }
+        .redirect-text p { font-size: var(--font-size-sm); opacity: 0.9; margin: 0; line-height: 1.4; }
+        .redirect-btn {
+            background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--border-radius-lg); color: white; padding: var(--spacing-md) var(--spacing-lg);
+            font-weight: 600; font-size: var(--font-size-base); cursor: pointer;
+            transition: all var(--transition-normal); display: flex; align-items: center;
+            gap: var(--spacing-sm); flex-shrink: 0; backdrop-filter: blur(10px);
+        }
+        .redirect-btn:hover { background: rgba(255, 255, 255, 0.3); border-color: rgba(255, 255, 255, 0.5); }
+        .redirect-arrow { transition: transform var(--transition-normal); }
+        .redirect-btn:hover .redirect-arrow { transform: translateX(3px); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .explanation-section { padding: var(--spacing-lg); gap: var(--spacing-md); }
+            .explanation-header { flex-direction: column; align-items: flex-start; }
+            .explanation-title { font-size: var(--font-size-2xl); }
+            .explanation-emoji { font-size: 2.5rem; }
+            .explanation-card { padding: var(--spacing-md); }
+            .card-icon { width: 40px; height: 40px; }
+            .card-icon svg, .card-icon i { width: 20px; height: 20px; font-size: 20px; }
+            .redirect-content { flex-direction: column; text-align: center; gap: var(--spacing-md); }
+            .redirect-text { text-align: center; }
+            .redirect-btn { width: 100%; justify-content: center; }
+        }
+        @media (max-width: 480px) {
+            .container { padding: var(--spacing-md); }
+            .explanation-section { padding: var(--spacing-md); }
+            .explanation-title { font-size: var(--font-size-xl); }
+        }
+
+        /* Ripple effect */
+        button { position: relative; overflow: hidden; }
+        .ripple {
+            position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.3);
+            transform: scale(0); animation: rippleEffect 0.6s linear; pointer-events: none;
+        }
+        @keyframes rippleEffect { to { transform: scale(4); opacity: 0; } }
+    </style>
+</head>
+
+<body>
+    <div class="theme-toggle">
+        <button id="theme-toggle-btn" aria-label="Toggle theme">
+            <span class="theme-icon">🌙</span>
+        </button>
+    </div>
+
+    <div class="logout-container">
+        <button id="logout-btn" aria-label="Logout">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    </div>
+
+    <div class="container">
+        <section class="explanation-section">
+            <div class="explanation-header">
+                <div class="explanation-title-wrapper">
+                    <span class="explanation-emoji">📚</span>
+                    <div class="explanation-title-content">
+                        <h3 class="explanation-title">Introduction to C</h3>
+                        <p class="explanation-subtitle">The foundation of modern programming.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-header">
+                    <div class="card-icon icon-purple">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h4 class="card-title">The History of C</h4>
+                </div>
+                <div class="card-text">
+                    <p>
+                        The C programming language was developed in the early 1970s by <strong
+                            class="highlight-text">Dennis Ritchie</strong> at Bell Labs. It was created as a successor to
+                        the B language, with the primary goal of developing the <strong
+                            class="highlight-text">UNIX operating system</strong>.
+                    </p>
+                    <p>
+                        Its power and flexibility led to UNIX being almost entirely rewritten in C, which was a
+                        revolutionary step at the time. This close tie between C and UNIX is a major reason for its
+                        widespread adoption and lasting influence.
+                    </p>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-header">
+                    <div class="card-icon icon-blue">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h4 class="card-title">Key Features of C</h4>
+                </div>
+                <div class="card-text">
+                    <ul class="list-disc">
+                        <li><strong>Powerful & Fast:</strong> C provides low-level access to memory and machine
+                            instructions, resulting in highly efficient and fast code.</li>
+                        <li><strong>Portable:</strong> Code written in C can be compiled and run on different machines
+                            with minimal changes.</li>
+                        <li><strong>Structured Language:</strong> It encourages breaking down problems into smaller,
+                            manageable functions, improving readability and maintenance.</li>
+                        <li><strong>Rich Library:</strong> Comes with a set of built-in functions that save development
+                            time.</li>
+                        <li><strong>Memory Management:</strong> C allows direct manipulation of memory with pointers,
+                            giving the programmer full control (and responsibility!).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-header">
+                    <div class="card-icon icon-green">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h4 class="card-title">Applications of C</h4>
+                </div>
+                <div class="card-text">
+                    <p>
+                        C is everywhere, even decades after its creation. Its performance and control make it ideal for:
+                    </p>
+                    <ul class="list-disc">
+                        <li><strong>Operating Systems:</strong> The kernels of <strong
+                                class="highlight-text">Windows, Linux, and macOS</strong> are all written largely in C.
+                        </li>
+                        <li><strong>Embedded Systems:</strong> Powers everything from microcontrollers in your
+                            microwave and car to complex medical devices and avionics.</li>
+                        <li><strong>Game Development:</strong> Used to create high-performance game engines where speed
+                            is critical.</li>
+                        <li><strong>Compilers & Interpreters:</strong> Many modern languages, like <strong
+                                class="highlight-text">Python</strong>, have their core interpreters written in C.
+                        </li>
+                        <li><strong>Databases:</strong> Core components of popular databases like MySQL and Oracle are
+                            built with C.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-header">
+                    <div class="card-icon icon-orange">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <h4 class="card-title">Why is C Still Relevant Today?</h4>
+                </div>
+                <div class="card-text">
+                    <p>
+                        In a world of high-level, easy-to-use languages, C remains essential for two primary reasons:
+                        <strong class="highlight-text">performance and control</strong>.
+                    </p>
+                    <ul class="list-disc">
+                        <li><strong>Foundation of Everything:</strong> Most high-level languages (<code
+                                class="inline-code">Python</code>, <code class="inline-code">Java</code>, <code
+                                class="inline-code">JavaScript</code>) and their libraries are built on top of C/C++.
+                            Understanding C helps you understand how they work under the hood.</li>
+                        <li><strong>Hardware-Level Access:</strong> When you need to interact directly with computer
+                            hardware (like in drivers, IoT devices, or embedded systems), C is the language of choice.
+                        </li>
+                        <li><strong>Unmatched Speed:</strong> For tasks that demand the absolute maximum performance,
+                            like in high-frequency trading, game engines, or scientific computing, C is often
+                            unbeatable.</li>
+                    </ul>
+                    <p>
+                        Learning C is like learning how a car's engine works. You may not need to build one every day,
+                        but it gives you a fundamental understanding that makes you a better driver (and programmer).
+                    </p>
+                </div>
+            </div>
+
+            <div class="quiz-redirect-box">
+                <div class="redirect-content">
+                    <div class="redirect-icon">→</div>
+                    <div class="redirect-text">
+                        <h4>Ready for the next step?</h4>
+                        <p>Let's dive into the basic structure of a C program and see how it's put together.</p>
+                    </div>
+                    <button id="next-lesson-btn" class="redirect-btn">
+                        <span>Next Lesson</span>
+                        <span class="redirect-arrow">→</span>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+    </div>
+
+    <script>
+        // --- Globals ---
+        const API_BASE_URL = '/api';
+        const TOPIC_ID = 'cBasics';
+        const ALGORITHM_ID = 'cIntro';
+
+        // --- Active Time Tracking Globals ---
+        let activeSeconds = 0;
+        let timeInterval = null;
+        let isPageActive = true;
+        let progressSent = false;
+
+        // --- Authentication Check (IIFE) ---
+        (async function () {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.log('No token, redirecting to login.');
+                redirectToLogin();
+                return;
+            }
+
+            try {
+                const accessResponse = await fetch(`${API_BASE_URL}/auth/check-access/${TOPIC_ID}/${ALGORITHM_ID}`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!accessResponse.ok) {
+                    let errorMsg = `HTTP error ${accessResponse.status}`;
+                    try { const errorData = await accessResponse.json(); errorMsg = errorData.message || errorMsg; } catch (e) { }
+                    if (accessResponse.status === 401 || accessResponse.status === 403) {
+                        alert('Authentication error. Please log in again.');
+                        redirectToLogin();
+                    } else {
+                        alert(`Error checking access: ${errorMsg}. Redirecting to dashboard.`);
+                        redirectToDashboard();
+                    }
+                    return;
+                }
+
+                const accessData = await accessResponse.json();
+                if (accessData.success && accessData.hasAccess) {
+                    console.log('Access granted to cIntro.');
+                    initializePageContent(); // Access granted, initialize the page
+                } else {
+                    alert('Access Denied: This topic or algorithm is currently locked.');
+                    redirectToDashboard(); // Redirect if access is denied
+                }
+            } catch (error) {
+                alert(`Failed to check access: ${error.message}. Please try again later.`);
+                redirectToDashboard();
+            }
+        })();
+
+        // --- Navigation ---
+        function redirectToLogin() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            window.location.href = '../../auth.html'; // Adjust path as needed
+        }
+
+        function redirectToDashboard() {
+            window.location.href = '../../dashboard.html'; // Adjust path as needed
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                stopActiveTimer(); // Stop timer before logging out
+                sendActiveTimeUpdate(true); // Send final time before leaving
+                redirectToLogin();
+            }
+        }
+
+        // --- Theme Management ---
+        class ThemeManager {
+            constructor() {
+                this.theme = localStorage.getItem('theme') || 'light';
+                this.init();
+            }
+            init() {
+                this.applyTheme();
+                this.setupToggle();
+            }
+            applyTheme() {
+                document.documentElement.setAttribute('data-theme', this.theme);
+                this.updateToggleIcon();
+            }
+            updateToggleIcon() {
+                const toggleBtn = document.getElementById('theme-toggle-btn');
+                if (toggleBtn) {
+                    const icon = toggleBtn.querySelector('.theme-icon');
+                    if (icon) icon.textContent = this.theme === 'dark' ? '☀️' : '🌙';
+                }
+            }
+            setupToggle() {
+                const toggleBtn = document.getElementById('theme-toggle-btn');
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', () => this.toggleTheme());
+                }
+            }
+            toggleTheme() {
+                this.theme = this.theme === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('theme', this.theme);
+                this.applyTheme();
+            }
+        }
+
+        // --- Active Time Tracking ---
+        function startActiveTimer() {
+            if (timeInterval) return; // Already running
+            if (!isPageActive) return; // Don't start if page is not active
+
+            console.log("Starting active time tracker.");
+            timeInterval = setInterval(() => {
+                activeSeconds++;
+                // console.log(`Active time: ${activeSeconds}s`); // For debugging
+            }, 1000);
+        }
+
+        function stopActiveTimer() {
+            if (timeInterval) {
+                console.log("Stopping active time tracker.");
+                clearInterval(timeInterval);
+                timeInterval = null;
+            }
+        }
+
+        function handleVisibilityChange() {
+            if (document.visibilityState === 'hidden') {
+                isPageActive = false;
+                stopActiveTimer();
+                // Send update when user tabs away, if significant time spent
+                if (activeSeconds >= 10) {
+                    sendActiveTimeUpdate(false); // Send intermediate update
+                }
+            } else {
+                isPageActive = true;
+                startActiveTimer();
+            }
+        }
+        
+        function handleWindowFocus() {
+            isPageActive = true;
+            startActiveTimer();
+        }
+        
+        function handleWindowBlur() {
+            isPageActive = false;
+            stopActiveTimer();
+        }
+
+        // --- Progress Update ---
+        async function sendActiveTimeUpdate(isFinal = false) {
+            const token = localStorage.getItem('authToken');
+            if (!token || progressSent) return;
+
+            const timeSpentSeconds = activeSeconds;
+            if (timeSpentSeconds < 5) { // Don't send trivial updates
+                console.log(`Time spent (${timeSpentSeconds}s) too short, not sending update.`);
+                if(isFinal) progressSent = true; 
+                return;
+            }
+
+            // --- NEW COMPLETION LOGIC ---
+            // Check if user met the 30-second threshold for completion
+            const shouldMarkComplete = (timeSpentSeconds >= 30);
+            // --- END NEW LOGIC ---
+
+            // Reset counter *before* sending to avoid double-counting
+            activeSeconds = 0; 
+            if(isFinal) progressSent = true; // Prevent any more sends on page unload
+
+            const progressData = {
+                category: TOPIC_ID,
+                algorithm: ALGORITHM_ID,
+                data: {
+                    timeSpentViz: timeSpentSeconds, // Use the time tracking field
+                    lastAttemptViz: new Date(),
+                    // --- ADD THIS LINE ---
+                    ...(shouldMarkComplete && { completed: true }) // Add 'completed: true' if threshold met
+                }
+            };
+            
+            console.log(`Sending active time update: ${timeSpentSeconds}s. Completed: ${shouldMarkComplete}`);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/progress`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(progressData),
+                    keepalive: isFinal // Important for unload scenarios
+                });
+                
+                if (!response.ok) throw new Error('Failed to send progress');
+                console.log('Active time progress update successful.');
+
+            } catch (error) {
+                console.error('Error sending active time update:', error);
+                // If it failed, add the time back to be sent on the next attempt
+                activeSeconds += timeSpentSeconds; 
+                if(isFinal) progressSent = false; // Allow retry if final send failed
+            }
+        }
+        
+        // Beacon sender for page unload
+        function sendActiveTimeBeacon() {
+            const token = localStorage.getItem('authToken');
+            if (!token || progressSent) return;
+
+            // --- NEW COMPLETION LOGIC ---
+            const timeSpentSeconds = activeSeconds; // Capture time before resetting
+            if (timeSpentSeconds < 5) return; // Don't send trivial times
+            
+            const shouldMarkComplete = (timeSpentSeconds >= 30);
+            // --- END NEW LOGIC ---
+
+            progressSent = true; // Mark as sent
+            const progressData = {
+                category: TOPIC_ID,
+                algorithm: ALGORITHM_ID,
+                data: {
+                    timeSpentViz: timeSpentSeconds, // Use captured time
+                    lastAttemptViz: new Date(),
+                    // --- ADD THIS LINE ---
+                    ...(shouldMarkComplete && { completed: true }) // Add 'completed: true' if threshold met
+                }
+            };
+            
+            console.log(`Sending final active time update via Beacon: ${timeSpentSeconds}s. Completed: ${shouldMarkComplete}`);
+            const blob = new Blob([JSON.stringify(progressData)], { type: 'application/json' });
+            
+            const beaconURL = `${API_BASE_URL}/auth/progress?authToken=${encodeURIComponent(token)}`;
+            navigator.sendBeacon(beaconURL, blob);
+            activeSeconds = 0; // Reset
+        }
+
+
+        // --- Page Initialization (Called after auth) ---
+        function initializePageContent() {
+            console.log("Initializing page content...");
+            const themeManager = new ThemeManager();
+
+            // Setup Event Listeners
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            document.getElementById('next-lesson-btn').addEventListener('click', () => {
+                // Navigate to the next lesson's HTML page
+                window.location.href = 'cStructureSyntax.html'; 
+            });
+
+            // --- Active Time Tracking Listeners ---
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            window.addEventListener('focus', handleWindowFocus);
+            window.addEventListener('blur', handleWindowBlur);
+            
+            // Send final data on page unload
+            window.addEventListener('pagehide', (event) => {
+                stopActiveTimer(); // Stop any running timer
+                if (!event.persisted) { // Only on final unload, not bfcache
+                    sendActiveTimeBeacon(); // Try beacon first
+                }
+            });
+
+            // Start the timer
+            startActiveTimer();
+
+            // Ripple effect
+            document.querySelectorAll('button').forEach(button => {
+                button.addEventListener('click', function (e) {
+                    if (this.disabled) return;
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height) * 1.5;
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.classList.add('ripple');
+                    this.appendChild(ripple);
+                    setTimeout(() => { if (ripple.parentNode) ripple.remove(); }, 600);
+                });
+            });
+
+            console.log("C Intro page fully initialized.");
+        }
+    </script>
+</body>
+
+
+</html>
+

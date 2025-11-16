@@ -1,0 +1,4403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Bubble Sort Visualization - Enhanced Design</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        (function () {
+            // Get saved theme, but DEFAULT to 'light'
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Import modern font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        /* CSS Custom Properties for Enhanced Theme System */
+        :root {
+            /* Light Theme Colors */
+            --bg-primary-light: #f8fafc;
+            --bg-secondary-light: #ffffff;
+            --bg-tertiary-light: #f1f5f9;
+            --bg-quaternary-light: #e2e8f0;
+            --text-primary-light: #1e293b;
+            --text-secondary-light: #475569;
+            --text-muted-light: #64748b;
+
+            /* Accent Colors */
+            --accent-primary: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-light: #dbeafe;
+            --accent-gradient: linear-gradient(135deg, #3b82f6, #1d4ed8);
+
+            /* Status Colors */
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --error: #ef4444;
+            --error-light: #fee2e2;
+
+            /* Comparison Colors (Soft Tints) */
+            --compare-color: #f59e0b;
+            --compare-bg: #fef3c7;
+            --swap-color: #ef4444;
+            --swap-bg: #fee2e2;
+            --sorted-color: #10b981;
+            --sorted-bg: #d1fae5;
+            --pass-complete-color: #f97316;
+            --pass-complete-bg: #fed7aa;
+
+            /* Shadows & Effects */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --glow: 0 0 20px rgba(59, 130, 246, 0.3);
+
+            /* Borders */
+            --border-color: #e2e8f0;
+            --border-radius-sm: 4px;
+            --border-radius: 8px;
+            --border-radius-lg: 12px;
+            --border-radius-xl: 16px;
+
+            /* Spacing */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+
+            /* Transitions */
+            --transition-fast: 0.15s ease-in-out;
+            --transition-normal: 0.3s ease-in-out;
+            --transition-slow: 0.5s ease-in-out;
+
+            /* Typography */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-2xl: 1.5rem;
+            --font-size-3xl: 1.875rem;
+            --font-size-4xl: 2.25rem;
+        }
+
+        /* Dark Theme Colors */
+        [data-theme="dark"] {
+            --bg-primary-light: #0f172a;
+            --bg-secondary-light: #1e293b;
+            --bg-tertiary-light: #334155;
+            --bg-quaternary-light: #475569;
+            --text-primary-light: #f1f5f9;
+            --text-secondary-light: #cbd5e1;
+            --text-muted-light: #94a3b8;
+
+            --border-color: #475569;
+
+            /* Adjust comparison colors for dark mode */
+            --compare-bg: rgba(245, 158, 11, 0.2);
+            --swap-bg: rgba(239, 68, 68, 0.2);
+            --sorted-bg: rgba(16, 185, 129, 0.2);
+            --pass-complete-bg: rgba(249, 115, 22, 0.2);
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-primary-light);
+            color: var(--text-primary-light);
+            font-family: var(--font-family);
+            line-height: 1.6;
+            transition: background-color var(--transition-normal), color var(--transition-normal);
+            min-height: 100vh;
+        }
+
+        /* Logout Button Styling (Add this) */
+        .logout-container {
+            position: fixed;
+            top: 80px;
+            /* Position below the theme toggle */
+            right: 20px;
+            z-index: 1000;
+        }
+
+        #logout-btn {
+            background: var(--bg-secondary-light);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            /* Slightly smaller icon */
+            color: var(--error);
+            /* Use error color for logout */
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+        }
+
+        #logout-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: var(--shadow-lg);
+            background-color: var(--error-light);
+            /* Light red background on hover */
+        }
+
+        /* Adjust Theme Toggle Position if needed */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        #theme-toggle-btn {
+            background: var(--bg-secondary-light);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+        }
+
+        .quiz-section {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            background: var(--bg-secondary-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+            /* Added transition */
+        }
+
+        /* Added hover effect */
+        .quiz-section:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+
+        #quiz-button {
+            padding: var(--spacing-md) var(--spacing-xl);
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: var(--font-size-base);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
+            white-space: nowrap;
+            height: fit-content;
+        }
+
+        #quiz-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), var(--glow);
+        }
+
+        .quiz-button {
+            transition: all var(--transition-normal);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+
+        #theme-toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            /* Wider container */
+            margin: 0 auto;
+            padding: var(--spacing-xl);
+        }
+
+        /* Header */
+        .main-header {
+            text-align: center;
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .main-header h1 {
+            font-size: var(--font-size-4xl);
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .subtitle {
+            font-size: var(--font-size-lg);
+            color: var(--text-secondary-light);
+            font-weight: 400;
+        }
+
+        /* Enhanced Input Section */
+        .input-section {
+            background: var(--bg-secondary-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+        }
+
+        .input-container {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            /* Input takes available space, controls auto width */
+            gap: var(--spacing-lg);
+            /* Increased gap */
+            align-items: end;
+            /* Align items to the bottom */
+        }
+
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+
+        .controls-group {
+            display: flex;
+            gap: var(--spacing-md);
+            /* Use medium gap for controls */
+            align-items: end;
+            /* Align controls to the bottom */
+        }
+
+
+        .select-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+
+        .input-group label,
+        .select-group label {
+            font-weight: 600;
+            color: var(--text-secondary-light);
+            font-size: var(--font-size-sm);
+        }
+
+        .input-group input,
+        .select-group select {
+            padding: var(--spacing-md);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--bg-tertiary-light);
+            color: var(--text-primary-light);
+            font-size: var(--font-size-base);
+            transition: all var(--transition-fast);
+            font-family: var(--font-family);
+        }
+
+        .input-group input {
+            /* min-width: 300px; */
+            /* Removed min-width to allow flexibility */
+        }
+
+        .select-group select {
+            min-width: 160px;
+        }
+
+        .input-group input:focus,
+        .select-group select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .input-hint {
+            font-size: var(--font-size-xs);
+            color: var(--text-muted-light);
+            grid-column: 1 / -1;
+            /* Span across all columns */
+            margin-top: calc(-1 * var(--spacing-sm));
+            /* Pull up slightly */
+        }
+
+
+        .start-button {
+            padding: var(--spacing-md) var(--spacing-xl);
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: var(--font-size-base);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
+            white-space: nowrap;
+            height: fit-content;
+            /* Ensure button height matches input field height */
+        }
+
+
+        .start-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), var(--glow);
+        }
+
+        /* Main Content Grid */
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--spacing-xl);
+            align-items: start;
+        }
+
+        /* Panel Styles */
+        .left-panel,
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+
+        /* Section Headers */
+        .section-header {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .section-header h3 {
+            font-size: var(--font-size-xl);
+            font-weight: 600;
+            color: var(--text-primary-light);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .section-subtitle {
+            font-size: var(--font-size-sm);
+            color: var(--text-muted-light);
+        }
+
+        /* Section Base Styles */
+        section {
+            background: var(--bg-secondary-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+        }
+
+        section:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Array Visualization - Simplified (Legend Only) */
+        .array-container {
+            background: var(--bg-tertiary-light);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg) var(--spacing-xl);
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Center horizontally */
+            justify-content: center;
+            /* Center vertically */
+            overflow-x: auto;
+            /* Allow horizontal scrolling */
+            position: relative;
+            gap: var(--spacing-md);
+        }
+
+
+        /* Main array view centered */
+        #array-view {
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: center;
+            /* Center items within flex container */
+            flex-wrap: nowrap;
+            /* Prevent wrapping */
+            min-width: min-content;
+            /* Ensure container shrinks/grows with content */
+            padding: var(--spacing-sm) 0;
+        }
+
+
+        .array-cell {
+            min-width: 50px;
+            /* Reduced from 60px */
+            width: 50px;
+            /* Fixed width */
+            height: 50px;
+            /* Reduced from 60px */
+            background: var(--bg-quaternary-light);
+            border: 3px solid transparent;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-base);
+            /* Slightly smaller font */
+            font-weight: 700;
+            color: var(--text-primary-light);
+            position: relative;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-normal);
+            cursor: default;
+            /* Changed from pointer */
+            flex-shrink: 0;
+            /* Prevent shrinking */
+        }
+
+        /* No hover effect needed for visualization */
+        /* .array-cell:hover { ... } */
+
+        .array-cell.compare {
+            background: var(--compare-bg);
+            border-color: var(--compare-color);
+            color: var(--compare-color);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .array-cell.swap {
+            background: var(--swap-bg);
+            border-color: var(--swap-color);
+            color: var(--swap-color);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .array-cell.sorted {
+            background: var(--sorted-bg);
+            border-color: var(--sorted-color);
+            color: var(--sorted-color);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .array-cell.pass-complete {
+            background: var(--pass-complete-bg);
+            border-color: var(--pass-complete-color);
+            color: var(--pass-complete-color);
+            animation: passCompleteGlow 1.5s ease-in-out;
+            /* Adjusted animation duration */
+        }
+
+
+        /* Live array visualization styles */
+        .array-cell.empty-cell {
+            background: var(--bg-tertiary-light);
+            border: 3px dashed var(--border-color);
+            color: var(--text-muted-light);
+            animation: pulse 2s infinite;
+        }
+
+        .array-cell.live-cell {
+            background: var(--accent-light);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            transform: scale(1.02);
+            box-shadow: var(--glow);
+        }
+
+        .array-cell.invalid-cell {
+            background: var(--error-light);
+            border-color: var(--error);
+            color: var(--error);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .array-cell.warning-cell {
+            background: var(--error-light);
+            border-color: var(--error);
+            color: var(--error);
+            animation: warning-blink 1s infinite;
+        }
+
+        .array-index {
+            position: absolute;
+            bottom: -20px;
+            /* Adjusted for smaller cells */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: var(--font-size-xs);
+            color: var(--text-muted-light);
+            font-weight: 500;
+            background: var(--bg-secondary-light);
+            padding: 1px 4px;
+            /* Reduced padding */
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        /* Remove integrated controls from visualization */
+        .integrated-controls {
+            display: none;
+        }
+
+        /* Legend remains at bottom of visualization */
+        .integrated-legend {
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: center;
+            flex-wrap: wrap;
+            background: var(--bg-secondary-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-sm) var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+            margin-top: auto;
+            /* Push legend to bottom */
+        }
+
+
+        .legend-item-mini {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary-light);
+            font-weight: 500;
+        }
+
+        .legend-box-mini {
+            width: 12px;
+            height: 12px;
+            border-radius: var(--border-radius-sm);
+            border: 2px solid transparent;
+            flex-shrink: 0;
+        }
+
+        .legend-text-mini {
+            white-space: nowrap;
+        }
+
+        .legend-box-mini.compare {
+            background: var(--compare-bg);
+            border-color: var(--compare-color);
+        }
+
+        .legend-box-mini.swap {
+            background: var(--swap-bg);
+            border-color: var(--swap-color);
+        }
+
+        .legend-box-mini.sorted {
+            background: var(--sorted-bg);
+            border-color: var(--sorted-color);
+        }
+
+        .legend-box-mini.pass-complete {
+            background: var(--pass-complete-bg);
+            border-color: var(--pass-complete-color);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-3px);
+            }
+
+            75% {
+                transform: translateX(3px);
+            }
+        }
+
+        @keyframes warning-blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes passCompleteGlow {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+            }
+
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 25px rgba(249, 115, 22, 0.7);
+            }
+        }
+
+
+        /* Visualization Controls - New section for controls at bottom of array visualization */
+        .visualization-controls {
+            display: grid;
+            /* Use grid for layout */
+            grid-template-columns: 1fr auto;
+            /* Speed takes available space, playback auto */
+            align-items: center;
+            gap: var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+            padding-top: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+
+
+        .visualization-controls .playback-controls {
+            display: flex;
+            gap: var(--spacing-sm);
+            /* Reduced gap */
+            justify-content: flex-end;
+            /* Align buttons to the right */
+        }
+
+        .visualization-controls .control-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            /* Smaller padding */
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: var(--font-size-xs);
+            /* Smaller font */
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            background: var(--bg-tertiary-light);
+            color: var(--text-primary-light);
+            min-width: 80px;
+            /* Reduced min-width */
+            height: 36px;
+            /* Reduced height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+
+        .visualization-controls .control-btn.play-btn {
+            background: var(--accent-gradient);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .visualization-controls .control-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .visualization-controls .control-btn.play-btn:hover:not(:disabled) {
+            box-shadow: var(--shadow-md), var(--glow);
+        }
+
+        .visualization-controls .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Remove step controls from algorithm state section */
+        .step-controls {
+            display: none;
+        }
+
+        /* Algorithm State Section - Variable Height */
+        .state-section {
+            background: var(--bg-secondary-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+            display: flex;
+            flex-direction: column;
+            min-height: 250px;
+            /* Ensure a minimum height */
+        }
+
+        .state-section:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .state-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            /* Reduced gap */
+            flex-grow: 1;
+            /* Allow content to take available space */
+        }
+
+        .variables-display {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-lg);
+            /* Reduced gap */
+            font-size: var(--font-size-base);
+            /* Smaller font */
+            font-weight: 600;
+            color: var(--accent-primary);
+            background: var(--accent-light);
+            padding: var(--spacing-sm);
+            /* Smaller padding */
+            border-radius: var(--border-radius);
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        /* Enhanced Step Description - Scrollable */
+        .step-description {
+            background: var(--bg-tertiary-light);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            /* Reduced padding */
+            color: var(--text-secondary-light);
+            font-size: var(--font-size-xs);
+            /* Smaller font */
+            line-height: 1.5;
+            /* Adjusted line height */
+            overflow-y: auto;
+            /* Enable vertical scroll */
+            flex-grow: 1;
+            /* Take remaining space */
+            min-height: 100px;
+            /* Ensure minimum space */
+        }
+
+        /* Step Header Styling */
+        .step-description .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+            /* Reduced margin */
+            padding-bottom: var(--spacing-xs);
+            /* Reduced padding */
+            border-bottom: 1px solid var(--border-color);
+            /* Thinner border */
+        }
+
+        .step-description .step-icon {
+            font-size: var(--font-size-lg);
+            /* Smaller icon */
+            margin-right: var(--spacing-sm);
+        }
+
+        .step-description .step-title {
+            font-weight: 700;
+            font-size: var(--font-size-sm);
+            /* Smaller title */
+            color: var(--accent-primary);
+            margin: 0;
+        }
+
+        /* Step Content Sections */
+        .step-description .step-section {
+            margin-bottom: var(--spacing-sm);
+            /* Reduced margin */
+        }
+
+        .step-description .step-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-description .section-label {
+            font-weight: 600;
+            color: var(--text-primary-light);
+            font-size: 0.7rem;
+            /* Even smaller label */
+            margin-bottom: var(--spacing-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .step-description .section-content {
+            padding-left: var(--spacing-sm);
+            /* Reduced padding */
+            border-left: 2px solid var(--accent-light);
+            /* Thinner border */
+            color: var(--text-secondary-light);
+            line-height: 1.5;
+        }
+
+        /* Comparison Display */
+        .step-description .comparison-result {
+            text-align: center;
+            font-weight: 600;
+            padding: var(--spacing-xs);
+            /* Smaller padding */
+            border-radius: var(--border-radius-sm);
+            margin-top: var(--spacing-xs);
+            /* Smaller margin */
+            font-size: var(--font-size-xs);
+            /* Smaller font */
+        }
+
+        .step-description .result-true {
+            background: var(--error-light);
+            color: var(--error);
+        }
+
+        .step-description .result-false {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        /* Pass Complete Styling */
+        .step-description .pass-complete-display {
+            background: linear-gradient(135deg, var(--pass-complete-bg), var(--pass-complete-bg));
+            /* Simplified */
+            border: 2px solid var(--pass-complete-color);
+            /* Thinner border */
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            /* Reduced padding */
+            text-align: center;
+            margin: var(--spacing-sm) 0;
+        }
+
+        .step-description .pass-complete-title {
+            font-size: var(--font-size-base);
+            /* Smaller title */
+            font-weight: 700;
+            color: var(--pass-complete-color);
+            margin-bottom: var(--spacing-xs);
+            /* Reduced margin */
+        }
+
+        .step-description .pass-complete-details {
+            color: var(--text-secondary-light);
+            font-size: var(--font-size-xs);
+            /* Smaller details */
+        }
+
+        /* Final Result Styling */
+        .step-description .final-result-display {
+            background: linear-gradient(135deg, var(--success-light), var(--success-bg));
+            /* Simplified */
+            border: 2px solid var(--success);
+            /* Thinner border */
+            border-radius: var(--border-radius);
+            /* Smaller radius */
+            padding: var(--spacing-md);
+            /* Reduced padding */
+            text-align: center;
+            margin: var(--spacing-sm) 0;
+        }
+
+        .step-description .final-result-title {
+            font-size: var(--font-size-lg);
+            /* Smaller title */
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: var(--spacing-sm);
+            /* Reduced margin */
+        }
+
+        .step-description .final-array-display {
+            background: var(--bg-secondary-light);
+            border: 1px solid var(--border-color);
+            /* Thinner border */
+            border-radius: var(--border-radius-sm);
+            /* Smaller radius */
+            padding: var(--spacing-sm);
+            /* Reduced padding */
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: var(--font-size-xs);
+            /* Smaller font */
+            color: var(--text-primary-light);
+            margin-top: var(--spacing-sm);
+            /* Reduced margin */
+            word-break: break-all;
+            /* Allow breaking long arrays */
+        }
+
+        /* Speed Control Section - Simplified */
+        .speed-section {
+            background: var(--bg-secondary-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .speed-control {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            /* Reduced gap */
+            align-items: flex-start;
+            /* Align items to start (left) */
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            /* Reduced gap */
+            width: 100%;
+            justify-content: flex-start;
+            /* Align to start */
+        }
+
+        .slider-container label {
+            font-weight: 600;
+            color: var(--text-secondary-light);
+            font-size: var(--font-size-xs);
+            /* Smaller font */
+            white-space: nowrap;
+        }
+
+        #speed-slider {
+            flex: 1;
+            max-width: 100%;
+            /* Take full available width */
+            accent-color: var(--accent-primary);
+            height: 6px;
+            cursor: pointer;
+        }
+
+        .speed-display {
+            font-weight: 600;
+            font-size: var(--font-size-xs);
+            /* Smaller font */
+            color: var(--accent-primary);
+            min-width: 3ch;
+            text-align: center;
+            background: var(--accent-light);
+            padding: 2px 6px;
+            /* Reduced padding */
+            border-radius: var(--border-radius-sm);
+        }
+
+        .result-display {
+            display: block;
+            /* Always block, controlled by opacity */
+            font-weight: 700;
+            font-size: var(--font-size-sm);
+            /* Smaller font */
+            color: var(--success);
+            padding: var(--spacing-sm);
+            /* Smaller padding */
+            background: var(--success-light);
+            border-radius: var(--border-radius);
+            text-align: center;
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+            border: 1px solid var(--success);
+            /* Thinner border */
+            margin-top: var(--spacing-sm);
+            /* Add some margin */
+            height: 30px;
+            /* Fixed height for consistency */
+            line-height: 1;
+            /* Adjust line height */
+        }
+
+        .result-display.show {
+            opacity: 1;
+        }
+
+        /* Info Section */
+        .complexity-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+
+        .complexity-card {
+            background: var(--bg-tertiary-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            text-align: center;
+            transition: transform var(--transition-fast);
+        }
+
+        .complexity-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-primary);
+        }
+
+        .complexity-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-muted-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .complexity-value {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .complexity-note {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary-light);
+        }
+
+        /* Code Section */
+        /* --- CORRECTED CSS --- */
+        .code-container {
+            background: var(--bg-tertiary-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: auto;
+            /* Allow scrolling on the container */
+            max-height: 400px;
+            /* Set max-height on the container */
+        }
+
+        #code-display {
+            /* overflow: auto; */
+            /* REMOVED */
+            padding: var(--spacing-md);
+            /* max-height: 400px; */
+            /* REMOVED */
+            margin: 0;
+        }
+
+        /* --- END CORRECTED CSS --- */
+
+        .code-content {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: var(--font-size-xs);
+            line-height: 1.5;
+            color: var(--text-secondary-light);
+            white-space: pre;
+            /* Use pre for better formatting */
+        }
+
+        .code-content .highlight {
+            color: var(--accent-primary);
+            /* Highlight color */
+            background: rgba(59, 130, 246, 0.1);
+            /* Lighter background */
+            display: block;
+            margin: 0 calc(-1 * var(--spacing-md));
+            /* Extend background */
+            padding: 0 var(--spacing-md);
+            /* Add padding back */
+            border-left: 3px solid var(--accent-primary);
+            /* Add border */
+            border-radius: 0 2px 2px 0;
+            font-weight: 500;
+            /* Slightly bolder */
+            animation: codeHighlight 0.4s ease-out;
+        }
+
+        @keyframes codeHighlight {
+            from {
+                background: rgba(59, 130, 246, 0.3);
+            }
+
+            to {
+                background: rgba(59, 130, 246, 0.1);
+            }
+        }
+
+        /* Description/Theory Section */
+        .theory-section .description-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .theory-section .description-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            background: var(--bg-tertiary-light);
+            border-radius: var(--border-radius-sm);
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        .theory-section .description-icon {
+            font-size: var(--font-size-lg);
+            flex-shrink: 0;
+            margin-top: 2px;
+            color: var(--accent-primary);
+        }
+
+        .theory-section .description-text {
+            line-height: 1.5;
+            font-size: var(--font-size-sm);
+        }
+
+        .theory-section .description-text strong {
+            color: var(--text-primary-light);
+            font-weight: 600;
+        }
+
+        .theory-section .description-text ul {
+            list-style: disc;
+            margin-left: var(--spacing-lg);
+            margin-top: var(--spacing-xs);
+        }
+
+        .theory-section .description-text li {
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .theory-section pre {
+            background: var(--bg-quaternary-light);
+            padding: var(--spacing-sm);
+            border-radius: var(--border-radius-sm);
+            margin-top: var(--spacing-sm);
+            font-size: var(--font-size-xs);
+            overflow-x: auto;
+        }
+
+        /* Swap Animation Class (used by JS) */
+        .array-cell.swapping-anim {
+            z-index: 100;
+            position: relative;
+        }
+
+        /* Scrollbar styling for array container */
+        .array-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .array-container::-webkit-scrollbar-track {
+            background: var(--bg-tertiary-light);
+            border-radius: var(--border-radius-sm);
+        }
+
+        .array-container::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: var(--border-radius-sm);
+        }
+
+        .array-container::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Scrollable Indicator */
+        .array-container.scrollable::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            /* Align to top */
+            bottom: 0;
+            /* Align to bottom */
+            width: 30px;
+            /* Wider gradient */
+            background: linear-gradient(to left, var(--bg-tertiary-light) 60%, transparent);
+            /* Adjust gradient */
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+        }
+
+        .array-container.scrollable.scrolled-start::before {
+            /* Add indicator for left scroll */
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 30px;
+            background: linear-gradient(to right, var(--bg-tertiary-light) 60%, transparent);
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity var(--transition-normal);
+        }
+
+        .array-container.scrollable.scrolled-end::after {
+            opacity: 0;
+        }
+
+        /* Hide right indicator at end */
+        .array-container.scrollable:not(.scrolled-start)::before {
+            opacity: 0;
+        }
+
+        /* Hide left indicator at start */
+        .array-container.scrollable:not(.scrolled-end)::after {
+            opacity: 1;
+        }
+
+        /* Show right indicator when not at end */
+
+
+        /* Responsive Design */
+        @media (max-width: 1000px) {
+
+            /* MODIFIED: Changed from 1200px to 1000px */
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .input-container {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-md);
+            }
+
+            .controls-group {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--spacing-md);
+            }
+
+            .input-container {
+                display: flex;
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+
+            .controls-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: var(--spacing-sm);
+            }
+
+            .start-button {
+                width: 100%;
+            }
+
+            .select-group select {
+                width: 100%;
+            }
+
+            .complexity-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .visualization-controls {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-md);
+            }
+
+            .playback-controls {
+                justify-content: center;
+            }
+
+            .speed-control {
+                align-items: center;
+            }
+
+            .slider-container {
+                justify-content: center;
+            }
+
+            .main-header h1 {
+                font-size: var(--font-size-3xl);
+            }
+
+            /* Explanation section responsive */
+            .explanation-section {
+                padding: var(--spacing-lg);
+                gap: var(--spacing-md);
+            }
+
+            .explanation-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .explanation-title {
+                font-size: var(--font-size-2xl);
+            }
+
+            .explanation-emoji {
+                font-size: 2.5rem;
+            }
+
+            .explanation-card {
+                padding: var(--spacing-md);
+            }
+
+            .card-icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            .card-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+
+            .tradeoffs {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: var(--spacing-sm);
+            }
+
+            .array-container {
+                min-height: 120px;
+            }
+
+            /* Reduce min height on small screens */
+            .array-cell {
+                min-width: 35px;
+                width: 35px;
+                height: 35px;
+                font-size: var(--font-size-xs);
+            }
+
+            #array-view {
+                gap: 4px;
+            }
+
+            .array-index {
+                bottom: -16px;
+                font-size: 0.6rem;
+            }
+
+            .step-description {
+                font-size: 0.7rem;
+                padding: var(--spacing-sm);
+            }
+
+            .variables-display {
+                font-size: var(--font-size-sm);
+                padding: var(--spacing-xs);
+            }
+
+            .control-btn {
+                padding: var(--spacing-xs) var(--spacing-sm);
+                min-width: 60px;
+                height: 30px;
+                font-size: 0.7rem;
+            }
+
+            .speed-display {
+                font-size: var(--font-size-xs);
+                padding: 1px 4px;
+            }
+
+            .slider-container label {
+                font-size: var(--font-size-xs);
+            }
+
+            /* ADDED: Fixes for small screen wobble */
+            section {
+                padding: var(--spacing-md);
+                /* Reduce section padding */
+            }
+
+            .main-header h1 {
+                font-size: var(--font-size-2xl);
+                /* Reduce header font size */
+            }
+
+            .input-group input,
+            .select-group select {
+                padding: var(--spacing-sm);
+                /* Reduce input padding */
+                font-size: var(--font-size-sm);
+                /* Reduce input font size */
+            }
+
+            .start-button {
+                padding: var(--spacing-sm);
+                /* Reduce button padding */
+                font-size: var(--font-size-sm);
+                /* Reduce button font size */
+            }
+
+            .visualization-controls {
+                gap: var(--spacing-md);
+                /* Reduce gap in viz controls */
+            }
+
+            /* Make code blocks wrap to prevent horizontal scroll */
+            .code-content {
+                white-space: pre-wrap;
+                word-break: break-all;
+            }
+
+            /* END: Fixes for small screen wobble */
+        }
+
+        /* Ripple effect for buttons */
+        button {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: rippleEffect 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes rippleEffect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary-light);
+            border-radius: var(--border-radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: var(--border-radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Loading state */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+            transition: opacity var(--transition-normal);
+        }
+
+        /* Focus styles for accessibility */
+        *:focus {
+            outline: 2px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+
+        button:focus,
+        input:focus,
+        select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Ensure right panel theory section allows text selection */
+        .theory-section .description-text {
+            user-select: text;
+            /* Allow text selection */
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+        }
+
+        .theory-section pre code {
+            user-select: all;
+            /* Allow selecting code */
+            -webkit-user-select: all;
+            -moz-user-select: all;
+            -ms-user-select: all;
+        }
+
+        /* --- Enhanced Explanation Section Styles --- */
+        .explanation-section {
+            background: var(--bg-secondary-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-xl);
+            padding: var(--spacing-2xl);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+            /* ADDED: Flexbox for sequential layout */
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+            /* Gap between header and cards, and between cards */
+        }
+
+        .explanation-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-gradient);
+        }
+
+        .explanation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            /* margin-bottom: var(--spacing-2xl); */
+            /* Removed margin, using gap now */
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .explanation-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .explanation-emoji {
+            font-size: 3.5rem;
+            line-height: 1;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .explanation-title-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .explanation-title {
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+        }
+
+        .explanation-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary-light);
+            margin: 0;
+        }
+
+        .explanation-badge {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            background: var(--success-light);
+            color: var(--success);
+            padding: var(--spacing-xs) var(--spacing-md);
+            border-radius: 50px;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            border: 1px solid var(--success);
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
+        }
+
+        /* REMOVED: .explanation-grid rules */
+        /*
+.explanation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+}
+*/
+
+        .explanation-card {
+            background: var(--bg-tertiary-light);
+            border-radius: var(--border-radius-lg);
+            border: 2px solid transparent;
+            padding: var(--spacing-xl);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+            max-width: 100%;
+            /* Ensure cards fit container */
+            /* margin-bottom: var(--spacing-lg); */
+            /* Using gap on parent now */
+        }
+
+        .explanation-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--accent-gradient);
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+            z-index: 0;
+        }
+
+        .explanation-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--accent-primary);
+        }
+
+        .explanation-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .explanation-card>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* REMOVED: Grid specific spanning styles */
+        /*
+.card-featured {
+    grid-column: span 1;
+    background: linear-gradient(135deg, #59626b, var(--bg-tertiary-light));
+}
+
+.card-large {
+    grid-column: span 1;
+}
+
+@media (min-width: 768px) {
+    .explanation-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .card-featured {
+        grid-column: span 2;
+    }
+}
+
+@media (min-width: 1024px) {
+    .explanation-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .card-large {
+        grid-column: span 2;
+    }
+}
+*/
+
+        /* Reset grid-column for these classes */
+        .card-large,
+        .card-featured {
+            grid-column: auto;
+        }
+
+        /* Optional: Reset background if desired */
+        .card-featured {
+            background: var(--bg-tertiary-light);
+        }
+
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-normal);
+            flex-shrink: 0;
+        }
+
+        .card-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .icon-blue {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .icon-green {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .icon-orange {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .icon-purple {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .icon-cyan {
+            background: rgba(6, 182, 212, 0.1);
+            color: #06b6d4;
+        }
+
+        .icon-pink {
+            background: rgba(236, 72, 153, 0.1);
+            color: #ec4899;
+        }
+
+        .explanation-card:hover .card-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .card-title {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            color: var(--text-primary-light);
+            margin: 0;
+            flex: 1;
+        }
+
+        .card-text {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary-light);
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        .highlight-text {
+            color: var(--accent-primary);
+            font-weight: 600;
+            background: rgba(59, 130, 246, 0.1);
+            padding: 2px 6px;
+            border-radius: var(--border-radius-sm);
+        }
+
+        .inline-code {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: var(--bg-quaternary-light);
+            color: var(--accent-primary);
+            padding: 3px 6px;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.9em;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        /* Bubble Demo Visual */
+        .card-visual {
+            margin-top: var(--spacing-md);
+        }
+
+        .bubble-demo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            background: var(--bg-secondary-light);
+            border-radius: var(--border-radius);
+            border: 2px dashed var(--border-color);
+        }
+
+        .bubble-item {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-light);
+            border: 2px solid var(--accent-primary);
+            border-radius: var(--border-radius);
+            font-weight: 700;
+            font-size: var(--font-size-lg);
+            color: var(--accent-primary);
+            transition: all var(--transition-normal);
+        }
+
+        .bubble-item.swap {
+            background: var(--swap-bg);
+            border-color: var(--swap-color);
+            color: var(--swap-color);
+            animation: bubble-swap 2s ease-in-out infinite;
+        }
+
+        @keyframes bubble-swap {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+        }
+
+        .bubble-arrow {
+            font-size: var(--font-size-xl);
+            color: var(--text-muted-light);
+            font-weight: 700;
+        }
+
+        /* Example Container */
+        .example-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .example-initial {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            background: var(--bg-secondary-light);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .example-label {
+            font-weight: 700;
+            color: var(--accent-primary);
+            font-size: var(--font-size-sm);
+        }
+
+        .example-array {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: var(--bg-quaternary-light);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--border-radius-sm);
+            color: var(--text-primary-light);
+            font-size: var(--font-size-base);
+        }
+
+        .example-steps {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .example-step {
+            display: flex;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--bg-secondary-light);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            transition: all var(--transition-fast);
+        }
+
+        .example-step:hover {
+            border-color: var(--accent-primary);
+            transform: translateX(4px);
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-gradient);
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: var(--font-size-sm);
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+            flex: 1;
+        }
+
+        .step-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-muted-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .step-content code {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: var(--bg-quaternary-light);
+            padding: 2px 6px;
+            border-radius: var(--border-radius-sm);
+            font-size: var(--font-size-sm);
+        }
+
+        .result-array {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .sorted-badge {
+            display: inline-block;
+            background: var(--success-light);
+            color: var(--success);
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+            border: 1px solid var(--success);
+        }
+
+        /* Complexity Items */
+        .complexity-items {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .complexity-item {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-sm);
+            background: var(--bg-secondary-light);
+            border-radius: var(--border-radius);
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        .complexity-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .complexity-label {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary-light);
+        }
+
+        .complexity-badge {
+            font-family: 'Monaco', 'Menlo', monospace;
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: var(--font-size-xs);
+            font-weight: 700;
+        }
+
+        .badge-success {
+            background: var(--success-light);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .badge-warning {
+            background: var(--warning-light);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .badge-error {
+            background: var(--error-light);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .badge-info {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+        }
+
+        .complexity-note {
+            font-size: var(--font-size-xs);
+            color: var(--text-muted-light);
+            font-style: italic;
+        }
+
+        /* Algorithm Steps */
+        .algorithm-steps {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .algo-step {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            background: var(--bg-secondary-light);
+            border-radius: var(--border-radius);
+            transition: all var(--transition-fast);
+        }
+
+        .algo-step:hover {
+            background: var(--accent-light);
+            transform: translateX(4px);
+        }
+
+        .algo-number {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-primary);
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: var(--font-size-xs);
+            flex-shrink: 0;
+        }
+
+        .algo-text {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary-light);
+            font-weight: 500;
+        }
+
+        /* Optimization Box */
+        .optimization-box {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-sm);
+            padding: var(--spacing-md);
+            background: var(--bg-secondary-light);
+            border-radius: var(--border-radius);
+            border: 2px dashed var(--success);
+        }
+
+        .optimization-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .optimization-icon {
+            font-size: var(--font-size-lg);
+        }
+
+        .optimization-text {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary-light);
+            font-weight: 500;
+        }
+
+        /* Tradeoffs */
+        .tradeoffs {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-md);
+        }
+
+        @media (min-width: 640px) {
+            .tradeoffs {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .tradeoff-section {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .tradeoff-title {
+            font-size: var(--font-size-sm);
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .pros-title {
+            color: var(--success);
+        }
+
+        .cons-title {
+            color: var(--error);
+        }
+
+        .tradeoff-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .tradeoff-list li {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary-light);
+            padding-left: var(--spacing-md);
+            position: relative;
+        }
+
+        .tradeoff-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            font-weight: 700;
+        }
+
+        .pros-title+.tradeoff-list li::before {
+            color: var(--success);
+        }
+
+        .cons-title+.tradeoff-list li::before {
+            color: var(--error);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .explanation-section {
+                padding: var(--spacing-lg);
+                gap: var(--spacing-md);
+                /* Adjust gap for smaller screens */
+            }
+
+            .explanation-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .explanation-title {
+                font-size: var(--font-size-2xl);
+            }
+
+            .explanation-emoji {
+                font-size: 2.5rem;
+            }
+
+            .explanation-card {
+                padding: var(--spacing-md);
+            }
+
+            .card-icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            .card-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        /* --- End Enhanced Explanation Section Styles --- */
+
+        /* Code Snippet Tabs and Container Styles */
+        .code-tabs {
+            display: flex;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .code-tab {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary-light);
+            font-weight: 500;
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-bottom: -2px;
+        }
+
+        .code-tab:hover {
+            color: var(--accent-primary);
+            background: var(--bg-tertiary-light);
+        }
+
+        .code-tab.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .code-content-container {
+            position: relative;
+            background: var(--bg-tertiary-light);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .code-snippet {
+            display: none;
+            max-height: min-content;
+            overflow: auto;
+            margin: 0;
+        }
+
+        .code-snippet.active {
+            display: block;
+        }
+
+        .code-snippet code {
+            display: block;
+            padding: var(--spacing-md);
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: var(--font-size-xs);
+            line-height: 1.6;
+            color: var(--text-secondary-light);
+            white-space: pre;
+        }
+
+        .copy-code-button {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: var(--font-size-xs);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .copy-code-button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .code-snippet-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary-light);
+            border-radius: var(--border-radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: var(--border-radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-hover);
+        }
+
+        .chart-container {
+            height: 250px;
+            margin-top: var(--spacing-md);
+        }
+
+        /* --- ADDED RESPONSIVE STYLES --- */
+        /* Responsive Design */
+        @media (max-width: 1000px) {
+
+            /* MODIFIED: Changed from 1200px to 1000px */
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .input-container {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-md);
+            }
+
+            .controls-group {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--spacing-md);
+            }
+
+            .input-container {
+                display: flex;
+                flex-direction: column;
+                gap: var(--spacing-sm);
+                justify-content: center;
+                align-items: center;
+            }
+
+            .controls-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: var(--spacing-sm);
+            }
+
+            .start-button {
+                width: 100%;
+            }
+
+            .select-group select {
+                width: 100%;
+            }
+
+            .complexity-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .visualization-controls {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-md);
+            }
+
+            .playback-controls {
+                justify-content: center;
+            }
+
+            .speed-control {
+                align-items: center;
+            }
+
+            .slider-container {
+                justify-content: center;
+            }
+
+            .main-header h1 {
+                font-size: var(--font-size-3xl);
+            }
+
+            /* Explanation section responsive */
+            .explanation-section {
+                padding: var(--spacing-lg);
+                gap: var(--spacing-md);
+            }
+
+            .explanation-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .explanation-title {
+                font-size: var(--font-size-2xl);
+            }
+
+            .explanation-emoji {
+                font-size: 2.5rem;
+            }
+
+            .explanation-card {
+                padding: var(--spacing-md);
+            }
+
+            .card-icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            .card-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+
+            .tradeoffs {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: var(--spacing-sm);
+            }
+
+            .array-container {
+                min-height: 120px;
+            }
+
+            /* Reduce min height on small screens */
+            .array-cell {
+                min-width: 35px;
+                width: 35px;
+                height: 35px;
+                font-size: var(--font-size-xs);
+            }
+
+            #array-view {
+                gap: 4px;
+            }
+
+            .array-index {
+                bottom: -16px;
+                font-size: 0.6rem;
+            }
+
+            .step-description {
+                font-size: 0.7rem;
+                padding: var(--spacing-sm);
+            }
+
+            .variables-display {
+                font-size: var(--font-size-sm);
+                padding: var(--spacing-xs);
+            }
+
+            .control-btn {
+                padding: var(--spacing-xs) var(--spacing-sm);
+                min-width: 60px;
+                height: 30px;
+                font-size: 0.7rem;
+            }
+
+            .speed-display {
+                font-size: var(--font-size-xs);
+                padding: 1px 4px;
+            }
+
+            .slider-container label {
+                font-size: var(--font-size-xs);
+            }
+
+            /* ADDED: Fixes for small screen wobble */
+            section {
+                padding: var(--spacing-md);
+                /* Reduce section padding */
+            }
+
+            .main-header h1 {
+                font-size: var(--font-size-2xl);
+                /* Reduce header font size */
+            }
+
+            .input-group input,
+            .select-group select {
+                padding: var(--spacing-sm);
+                /* Reduce input padding */
+                font-size: var(--font-size-sm);
+                /* Reduce input font size */
+            }
+
+            .start-button {
+                padding: var(--spacing-sm);
+                /* Reduce button padding */
+                font-size: var(--font-size-sm);
+                /* Reduce button font size */
+            }
+
+            .visualization-controls {
+                gap: var(--spacing-md);
+                /* Reduce gap in viz controls */
+            }
+
+            /* Make code blocks wrap to prevent horizontal scroll */
+            .code-content {
+                white-space: pre-wrap;
+                word-break: break-all;
+            }
+
+            .code-snippet code {
+                white-space: pre-wrap;
+                /* Apply to snippet code as well */
+                word-break: break-all;
+            }
+
+            /* END: Fixes for small screen wobble */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="theme-toggle">
+        <button id="theme-toggle-btn" aria-label="Toggle theme">
+            <span class="theme-icon">🌙</span>
+        </button>
+    </div>
+
+    <div class="logout-container">
+        <button id="logout-btn" aria-label="Logout">
+            <i class="fas fa-sign-out-alt"></i> </button>
+    </div>
+
+    <div class="container">
+        <header class="main-header">
+            <h1>Bubble Sort Visualization</h1>
+            <p class="subtitle">Interactive step-by-step sorting algorithm demonstration</p>
+        </header>
+
+        <section class="explanation-section">
+            <div class="explanation-header">
+                <div class="explanation-title-wrapper">
+                    <span class="explanation-emoji">🫧</span>
+                    <div class="explanation-title-content">
+                        <h3 class="explanation-title">Bubble Sort: An In-Depth Look</h3>
+                        <p class="explanation-subtitle">Understanding the Mechanics of a Foundational Sorting Algorithm
+                        </p>
+                    </div>
+                </div>
+                <div class="explanation-badge">
+                    <span class="badge-dot"></span>
+                    <span class="badge-text">Beginner Friendly</span>
+                </div>
+            </div>
+
+            <div class="explanation-card card-featured">
+                <div class="card-header">
+                    <div class="card-icon icon-blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                    </div>
+                    <h4 class="card-title">💡 Fundamental Principle</h4>
+                </div>
+                <p class="card-text">
+                    Bubble Sort operates on the principle of <strong>repeatedly comparing adjacent elements</strong>
+                    within a list. If a
+                    pair is found to be in the incorrect order (based on the desired sorting criteria, e.g., ascending),
+                    their positions are <strong>swapped</strong>. This process iterates through the list multiple times.
+                    With each
+                    complete pass, the next largest (or smallest, depending on order) unsorted element "bubbles up" to
+                    its
+                    final sorted position at the end of the unsorted portion.
+                </p>
+                <div class="card-visual">
+                    <div class="bubble-demo">
+                        <span class="bubble-item">5</span>
+                        <span class="bubble-arrow">→</span>
+                        <span class="bubble-item swap">1</span>
+                        <span class="bubble-arrow">→</span>
+                        <span class="bubble-item">5</span>
+                    </div>
+                    <div class="text-center text-xs text-muted-light mt-2">Comparison: (5, 1) → Swap Occurs</div>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-header">
+                    <div class="card-icon icon-purple">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                            <line x1="9" y1="9" x2="15" y2="9" />
+                            <line x1="9" y1="15" x2="15" y2="15" />
+                        </svg>
+                    </div>
+                    <h4 class="card-title">🔄 Algorithm Flow</h4>
+                </div>
+                <div class="algorithm-steps">
+                    <div class="algo-step">
+                        <span class="algo-number">1</span>
+                        <span class="algo-text">Compare adjacent elements (arr[j], arr[j+1])</span>
+                    </div>
+                    <div class="algo-step">
+                        <span class="algo-number">2</span>
+                        <span class="algo-text">If arr[j] > arr[j+1], swap them</span>
+                    </div>
+                    <div class="algo-step">
+                        <span class="algo-number">3</span>
+                        <span class="algo-text">Repeat steps 1-2 for all adjacent pairs in the current pass</span>
+                    </div>
+                    <div class="algo-step">
+                        <span class="algo-number">4</span>
+                        <span class="algo-text">Repeat passes until no swaps occur (array is sorted)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="explanation-card card-large">
+                <div class="card-header">
+                    <div class="card-icon icon-green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                        </svg>
+                    </div>
+                    <h4 class="card-title">⚙️ Algorithmic Walkthrough (Ascending)</h4>
+                </div>
+                <div class="example-container">
+                    <div class="example-initial">
+                        <span class="example-label">Input Array:</span>
+                        <code class="example-array">[5, 1, 4, 2, 8]</code>
+                    </div>
+                    <div class="example-steps">
+                        <h5 class="font-semibold text-sm mb-2 text-primary-light">Pass 1:</h5>
+                        <div class="example-step"> <span class="step-number">1a</span>
+                            <div class="step-content"> <span class="step-label">Compare (5, 1):</span> <code
+                                    class="inline-code">Swap</code> → <code class="result-array">[1, 5, 4, 2, 8]</code>
+                            </div>
+                        </div>
+                        <div class="example-step"> <span class="step-number">1b</span>
+                            <div class="step-content"> <span class="step-label">Compare (5, 4):</span> <code
+                                    class="inline-code">Swap</code> → <code class="result-array">[1, 4, 5, 2, 8]</code>
+                            </div>
+                        </div>
+                        <div class="example-step"> <span class="step-number">1c</span>
+                            <div class="step-content"> <span class="step-label">Compare (5, 2):</span> <code
+                                    class="inline-code">Swap</code> → <code class="result-array">[1, 4, 2, 5, 8]</code>
+                            </div>
+                        </div>
+                        <div class="example-step"> <span class="step-number">1d</span>
+                            <div class="step-content"> <span class="step-label">Compare (5, 8):</span> <code
+                                    class="inline-code">No Swap</code> → <code
+                                    class="result-array">[1, 4, 2, 5, 8]</code> <span class="sorted-badge">✨ 8
+                                    Sorted</span> </div>
+                        </div>
+                        <h5 class="font-semibold text-sm mb-2 mt-3 text-primary-light">Pass 2:</h5>
+                        <div class="example-step"> <span class="step-number">2a</span>
+                            <div class="step-content"> <span class="step-label">Compare (1, 4):</span> <code
+                                    class="inline-code">No Swap</code> → <code
+                                    class="result-array">[1, 4, 2, 5, 8]</code> </div>
+                        </div>
+                        <div class="example-step"> <span class="step-number">2b</span>
+                            <div class="step-content"> <span class="step-label">Compare (4, 2):</span> <code
+                                    class="inline-code">Swap</code> → <code class="result-array">[1, 2, 4, 5, 8]</code>
+                            </div>
+                        </div>
+                        <div class="example-step"> <span class="step-number">2c</span>
+                            <div class="step-content"> <span class="step-label">Compare (4, 5):</span> <code
+                                    class="inline-code">No Swap</code> → <code
+                                    class="result-array">[1, 2, 4, 5, 8]</code> <span class="sorted-badge">✨ 5
+                                    Sorted</span> </div>
+                        </div>
+                        <p class="text-xs text-center text-muted-light mt-2">... (Passes continue until fully sorted)
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-header">
+                    <div class="card-icon icon-orange">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="2" x2="12" y2="22" />
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                    </div>
+                    <h4 class="card-title">📊 Performance Analysis</h4>
+                </div>
+                <p class="card-text mb-2">Bubble Sort's efficiency varies significantly based on the initial state of
+                    the
+                    data:</p>
+                <div class="complexity-items">
+                    <div class="complexity-item">
+                        <div class="complexity-row"> <span class="complexity-label">Best Case Time</span> <span
+                                class="complexity-badge badge-success">O(n)</span> </div> <span
+                            class="complexity-note">Occurs
+                            when the array is already sorted. With optimization, requires only one pass.</span>
+                    </div>
+                    <div class="complexity-item">
+                        <div class="complexity-row"> <span class="complexity-label">Average Case Time</span> <span
+                                class="complexity-badge badge-warning">O(n²)</span> </div> <span
+                            class="complexity-note">Typical
+                            for randomly ordered data, requiring nested loops.</span>
+                    </div>
+                    <div class="complexity-item">
+                        <div class="complexity-row"> <span class="complexity-label">Worst Case Time</span> <span
+                                class="complexity-badge badge-error">O(n²)</span> </div> <span
+                            class="complexity-note">Occurs
+                            when the array is sorted in reverse order.</span>
+                    </div>
+                    <div class="complexity-item">
+                        <div class="complexity-row"> <span class="complexity-label">Space Complexity</span> <span
+                                class="complexity-badge badge-info">O(1)</span> </div> <span
+                            class="complexity-note">It's an
+                            <strong>in-place</strong> algorithm, requiring minimal extra memory (usually for a temporary
+                            swap variable).</span>
+                    </div>
+                </div>
+                <br>
+                <div class="card-header">
+                    <div class="card-icon icon-orange">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                    </div>
+                    <h4 class="card-title">📈 Time Complexity Growth</h4>
+                </div>
+                <div class="chart-container">
+                    <canvas id="complexityChart"></canvas>
+                </div>
+                <p class="text-xs text-muted-light mt-2 text-center">Visualizing O(n²) growth as input size (n)
+                    increases.</p>
+                <br>
+                <div class="card-header">
+                    <div class="card-icon icon-blue"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </div>
+                    <h4 class="card-title">💾 Space Complexity Growth</h4>
+                </div>
+                <div class="chart-container">
+                    <canvas id="spaceComplexityChart"></canvas>
+                </div>
+                <p class="text-xs text-muted-light mt-2 text-center">Visualizing O(1) - Constant space usage.</p>
+            </div>
+
+            <div class="explanation-card code-snippet-card">
+                <div class="card-header">
+                    <div class="card-icon icon-purple">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                    </div>
+                    <h4 class="card-title">💻 Code Implementation</h4>
+                    <button id="copyCodeBtn" class="copy-code-button" title="Copy Code">
+                        <i class="far fa-copy"></i> </button>
+                </div>
+                <div class="code-tabs">
+                    <button class="code-tab active" data-lang="javascript">JavaScript</button>
+                    <button class="code-tab" data-lang="python">Python</button>
+                    <button class="code-tab" data-lang="java">Java</button>
+                    <button class="code-tab" data-lang="c">C</button>
+                    <button class="code-tab" data-lang="cpp">C++</button>
+                </div>
+                <div class="code-content-container">
+                    <pre id="code-snippet-javascript" class="code-snippet active"><code class="language-javascript">// Bubble Sort in JavaScript
+function bubbleSort(arr) {
+const n = arr.length;
+for (let i = 0; i < n - 1; i++)
+  for (let j = 0; j < n - 1 - i; j++)
+    if (arr[j] > arr[j+1]) {
+      [arr[j], arr[j+1]] = [arr[j+1], arr[j]];
+    }
+return arr;
+}
+
+const arr = [64, 34, 25, 12, 22, 11, 90];
+console.log(bubbleSort(arr));
+
+</code></pre>
+                    <pre id="code-snippet-python" class="code-snippet"><code class="language-python"># Bubble Sort in Python
+def bubble_sort(a):
+  n = len(a)
+  for i in range(n-1):
+      for j in range(n-1-i):
+          if a[j] > a[j+1]:
+              a[j], a[j+1] = a[j+1], a[j]
+
+arr = [64, 34, 25, 12, 22, 11, 90]
+bubble_sort(arr)
+print(arr)
+
+</code></pre>
+                    <pre id="code-snippet-java" class="code-snippet"><code class="language-java">// Bubble Sort in Java
+public class BubbleSort {
+  static void bubbleSort(int[] a) {
+      int n = a.length;
+      for (int i = 0; i < n-1; i++)
+          for (int j = 0; j < n-1-i; j++)
+              if (a[j] > a[j+1]) {
+                  int t = a[j];
+                  a[j] = a[j+1];
+                  a[j+1] = t;
+              }
+  }
+
+  public static void main(String[] args) {
+      int[] arr = {64, 34, 25, 12, 22, 11, 90};
+      bubbleSort(arr);
+      for (int x : arr) System.out.print(x + " ");
+      System.out.println();
+  }
+}
+
+</code></pre>
+                    <pre id="code-snippet-c" class="code-snippet"><code class="language-c">// Bubble Sort in C
+#include &lt;stdio.h&gt;
+
+void bubbleSort(int arr[], int n) {
+    for (int i = 0; i < n-1; i++)
+        for (int j = 0; j < n-1-i; j++)
+            if (arr[j] > arr[j+1]) {
+                int t = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = t;
+            }
+}
+
+void printArray(int arr[], int n) {
+    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
+    printf("\n");
+}
+
+int main() {
+    int arr[] = {64, 34, 25, 12, 22, 11, 90};
+    int n = sizeof(arr)/sizeof(arr[0]);
+    bubbleSort(arr, n);
+    printArray(arr, n);
+    return 0;
+}
+
+</code></pre>
+                    <pre id="code-snippet-cpp" class="code-snippet"><code class="language-cpp">// Bubble Sort in C++
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+void bubbleSort(vector&lt;int&gt;&amp; a) {
+    int n = a.size();
+    for (int i = 0; i < n-1; ++i)
+        for (int j = 0; j < n-1-i; ++j)
+            if (a[j] > a[j+1]) swap(a[j], a[j+1]);
+}
+
+int main() {
+    vector&lt;int&gt; arr = {64, 34, 25, 12, 22, 11, 90};
+    bubbleSort(arr);
+    for (int x : arr) cout << x << " ";
+    cout << "\n";
+    return 0;
+}
+
+</code></pre>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-header">
+                    <div class="card-icon icon-cyan">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                        </svg>
+                    </div>
+                    <h4 class="card-title">🚀 Optimization: Early Termination</h4>
+                </div>
+                <p class="card-text">
+                    A significant optimization involves adding a <code class="inline-code">swapped</code> flag. This
+                    flag
+                    tracks whether any swaps occurred during a full pass through the inner loop. If a pass completes
+                    with
+                    <strong>no swaps</strong>, it signifies that the array is already sorted, and the algorithm can
+                    terminate early,
+                    potentially improving performance drastically for nearly sorted or already sorted arrays (achieving
+                    the
+                    O(n) best-case time complexity).
+                </p>
+                <div class="optimization-box">
+                    <div class="optimization-item"> <span class="optimization-icon">✅</span> <span
+                            class="optimization-text">If <code class="inline-code">swapped</code> remains <code
+                                class="inline-code">false</code> after a pass, the array is sorted.</span> </div>
+                    <div class="optimization-item"> <span class="optimization-icon">⏱️</span> <span
+                            class="optimization-text">Avoids unnecessary comparison passes.</span> </div>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-header">
+                    <div class="card-icon icon-pink">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 6v6l4 2" />
+                        </svg>
+                    </div>
+                    <h4 class="card-title">🔑 Key Characteristics</h4>
+                </div>
+                <ul class="list-disc pl-5 space-y-1 text-sm text-secondary-light">
+                    <li><strong>Simplicity:</strong> Very easy to understand and implement, often used as an
+                        introductory sorting
+                        algorithm.</li>
+                    <li><strong>In-Place:</strong> Sorts the array directly without requiring significant additional
+                        memory (O(1) space
+                        complexity).</li>
+                    <li><strong>Stable:</strong> Maintains the relative order of equal elements. If two elements have
+                        the same value,
+                        their original order is preserved after sorting.</li>
+                    <li><strong>Inefficient:</strong> Generally performs poorly on large datasets due to its quadratic
+                        time complexity
+                        (O(n²)) in average and worst cases.</li>
+                    <li><strong>Adaptive:</strong> With the optimization, it performs efficiently on nearly sorted data
+                        (O(n)).</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="input-section">
+            <div class="input-container">
+                <div class="input-group">
+                    <label for="array-input">Enter Array:</label>
+                    <input type="text" id="array-input" placeholder="e.g. 64, 34, 25, 12, 22, 11, 90" />
+                </div>
+                <div class="controls-group">
+                    <div class="select-group">
+                        <label for="order-select">Sort Order:</label>
+                        <select id="order-select">
+                            <option value="asc" selected>Ascending →</option>
+                            <option value="desc">Descending ↓</option>
+                        </select>
+                    </div>
+                    <button id="start-btn" class="start-button">
+                        <span>🚀 Start Sorting</span>
+                    </button>
+                </div>
+                <div class="input-hint">
+                    <span id="number-count">Numbers in Array: 0</span>
+                </div>
+            </div>
+        </section>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <section class="visualization-section">
+                    <div class="section-header">
+                        <h3>Array Visualization</h3>
+                        <div class="section-subtitle">Live array representation</div>
+                    </div>
+                    <div class="array-container">
+                        <div id="array-view"></div>
+                        <div class="integrated-legend">
+                            <div class="legend-item-mini">
+                                <span class="legend-box-mini compare"></span>
+                                <span class="legend-text-mini">Comparing</span>
+                            </div>
+                            <div class="legend-item-mini">
+                                <span class="legend-box-mini swap"></span>
+                                <span class="legend-text-mini">Swapping</span>
+                            </div>
+                            <div class="legend-item-mini">
+                                <span class="legend-box-mini sorted"></span>
+                                <span class="legend-text-mini">Sorted</span>
+                            </div>
+                            <div class="legend-item-mini">
+                                <span class="legend-box-mini pass-complete"></span>
+                                <span class="legend-text-mini">Pass Complete</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="visualization-controls">
+                        <div class="speed-control">
+                            <div class="slider-container">
+                                <label for="speed-slider">Speed:</label>
+                                <input id="speed-slider" type="range" min="1" max="100" value="60" />
+                                <span id="speed-value" class="speed-display">60</span>
+                            </div>
+                            <div id="result" class="result-display"></div>
+                        </div>
+                        <div class="playback-controls">
+                            <button id="prev-step" class="control-btn" disabled>
+                                <span>◀ Previous</span>
+                            </button>
+                            <button id="pause-play-btn" class="control-btn play-btn" disabled>
+                                <span>▶ Play</span>
+                            </button>
+                            <button id="next-step" class="control-btn" disabled>
+                                <span>Next ▶</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="state-section">
+                    <div class="section-header">
+                        <h3>Algorithm State</h3>
+                    </div>
+                    <div class="state-content">
+                        <div id="variable-state" class="variables-display">Initializing...</div>
+                        <div id="step-desc" class="step-description">
+                            <p>Enter an array and click 'Start Sorting'.</p>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <div class="right-panel">
+                <section class="code-section">
+                    <div class="section-header">
+                        <h3>Bubble Sort Algorithm (Code)</h3>
+                    </div>
+                    <div class="code-container">
+                        <pre id="code-display"><code id="code-block" class="code-content"></code></pre>
+                    </div>
+                </section>
+
+                <section class="info-section">
+                    <div class="section-header">
+                        <h3>Algorithm Complexity</h3>
+                    </div>
+                    <div class="complexity-grid">
+                        <div class="complexity-card">
+                            <div class="complexity-label">Time Complexity</div>
+                            <div class="complexity-value" id="time-complexity">O(n²)</div>
+                            <div class="complexity-note">Average & Worst Case</div>
+                        </div>
+                        <div class="complexity-card">
+                            <div class="complexity-label">Space Complexity</div>
+                            <div class="complexity-value" id="space-complexity">O(1)</div>
+                            <div class="complexity-note">Constant Space</div>
+                        </div>
+                    </div>
+                </section>
+                <section class="quiz-section">
+                    <div class="quiz-box">
+                        <h1>Practice Quiz</h1>
+                    </div>
+                    <div class="quiz-button">
+                        <span style="color: var(--text-muted-light);">Apply what you've learned</span>
+                        <button id="quiz-button" onclick="quiz_btn()">⚡Start Quiz</button>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+    </div>
+    <script>
+
+        // --- Define Constants First ---
+        const API_BASE_URL = '/api'; // Make sure this matches your backend setup
+
+        // --- PAGESHOW LISTENER (GLOBAL SCOPE) ---
+        window.addEventListener('pageshow', function (event) {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.log('pageshow: No token, redirecting to login.');
+                redirectToLogin();
+            }
+        });
+
+        // --- Authentication and Access Check ---
+        (async function () {
+            const token = localStorage.getItem('authToken');
+            const topicId = 'sorting'; // The topic ID for Bubble Sort
+            const algorithmId = 'bubbleSort'; // The algorithm ID
+
+            // 1. Check if user is logged in
+            if (!token) {
+                return; // Stop execution
+            } else {
+                console.log('Token found, proceeding to access check.');
+            }
+
+            // 2. Check if user has access to this specific algorithm
+            try {
+                // Now API_BASE_URL is guaranteed to be defined here
+                const accessResponse = await fetch(`${API_BASE_URL}/auth/check-access/${topicId}/${algorithmId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!accessResponse.ok) {
+                    // Handle HTTP errors (like 401 Unauthorized, 404 Not Found, 500 Server Error)
+                    let errorMsg = `HTTP error ${accessResponse.status}`;
+                    try {
+                        const errorData = await accessResponse.json();
+                        errorMsg = errorData.message || errorMsg;
+                    } catch (e) { /* Ignore if response is not JSON */ }
+
+                    if (accessResponse.status === 401 || accessResponse.status === 403) {
+                        console.error('Authorization error checking access:', errorMsg);
+                        alert('Authentication error. Please log in again.');
+                        redirectToLogin();
+                        return;
+                    } else {
+                        console.error('Error checking access:', errorMsg);
+                        alert(`Error checking access: ${errorMsg}. Redirecting to dashboard.`);
+                        redirectToDashboard();
+                        return;
+                    }
+                }
+
+                const accessData = await accessResponse.json();
+
+                if (accessData.success && accessData.hasAccess) {
+                    console.log('Access granted to bubbleSort.');
+                    // Access granted, initialize the page content *after* check completes
+                    initializePageContent();
+                } else {
+                    console.warn('Access denied:', accessData.status || 'Algorithm locked');
+                    alert('Access Denied: This topic or algorithm is currently locked.');
+                    redirectToDashboard(); // Redirect if access is denied
+                }
+
+            } catch (error) {
+                console.error('Network or other error during access check:', error);
+                alert(`Failed to check access: ${error.message}. Please try again later.`);
+                redirectToDashboard(); // Redirect on critical error
+            }
+        })();
+
+        function redirectToLogin() {
+            // Clear potentially invalid token before redirecting
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            window.location.href = '../../auth.html'; // Adjust path if needed
+        }
+
+        function redirectToDashboard() {
+            window.location.href = '../../dashboard.html'; // Adjust path if needed
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear authentication tokens/user data from localStorage
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('currentUser'); // Remove user details if stored
+
+                // Redirect to the login page
+                // Adjust the path as necessary based on your file structure
+                window.location.href = '../../auth.html';
+            }
+        }
+
+        // Bubble sort source code lines (for code highlighting)
+        const bubbleSortCodeLines = [
+            "", // Line 1 is empty for better indexing
+            "function bubbleSort(arr) {", // Line 2
+            "  let n = arr.length;", // Line 3
+            "  for (let i = 0; i < n - 1; i++) {", // Line 4
+            "    let swapped = false;", // Line 5 (Optimization)
+            "    for (let j = 0; j < n - i - 1; j++) {", // Line 6
+            "      if (arr[j] > arr[j + 1]) {", // Line 7
+            "        // Swap arr[j] and arr[j+1]", // Line 8
+            "        let temp = arr[j];", // Line 9
+            "        arr[j] = arr[j + 1];", // Line 10
+            "        arr[j + 1] = temp;", // Line 11
+            "        swapped = true;", // Line 12 (Optimization)
+            "      }", // Line 13
+            "    }", // Line 14
+            "    // If no swaps occurred, array is sorted", // Line 15 (Optimization)
+            "    if (!swapped) break;", // Line 16 (Optimization)
+            "  }", // Line 17
+            "  return arr;", // Line 18
+            "}" // Line 19
+        ];
+
+
+        // DOM Elements
+        const arrayInput = document.getElementById("array-input");
+        const numberCountSpan = document.getElementById("number-count");
+        const startBtn = document.getElementById("start-btn");
+        const orderSelect = document.getElementById("order-select");
+        const arrayView = document.getElementById("array-view");
+        const variableState = document.getElementById("variable-state");
+        const stepDesc = document.getElementById("step-desc");
+        const timeComplexitySpan = document.getElementById("time-complexity");
+        const spaceComplexitySpan = document.getElementById("space-complexity");
+        const resultSpan = document.getElementById("result");
+        const prevBtn = document.getElementById("prev-step");
+        const nextBtn = document.getElementById("next-step");
+        const pausePlayBtn = document.getElementById("pause-play-btn");
+        const speedSlider = document.getElementById("speed-slider");
+        const speedValue = document.getElementById("speed-value");
+        const codeBlock = document.getElementById("code-block");
+
+        // State variables
+        let array = [];
+        let detailedSteps = [];
+        let compactSteps = [];
+        let steps = []; // current steps (detailed or compact)
+        let currentStep = 0;
+        let autoplayTimer = null;
+        let isPlaying = false;
+        let stepMode = "detailed";
+        let isSwapping = false; // lock UI during animation
+
+        // Add these variables for time tracking
+        let startTime = null;
+        let elapsedTime = 0; // in seconds
+        let intervalId = null;
+        let progressSentForThisView = false; // Flag to prevent multiple sends
+        // --- End Timer Variables ---
+
+        // Map speed slider (1-100) to delay ms
+        function calcAutoplayDelay(val) {
+            // Linear mapping: 1=2000ms, 100=50ms
+            // Adjust the range (2000, 50) as needed
+            return Math.round(2000 - 1950 * (val - 1) / 99);
+        }
+        let autoplayDelay = calcAutoplayDelay(parseInt(speedSlider.value, 10));
+        speedValue.textContent = `${speedSlider.value}`;
+
+        // --- Timer Functions ---
+        function startTimer() {
+            if (startTime) return; // Don't restart if already running
+            startTime = Date.now();
+            elapsedTime = 0; // Reset elapsed time when starting
+            if (intervalId) clearInterval(intervalId); // Clear any existing timer just in case
+            console.log("Timer started.");
+            intervalId = setInterval(() => {
+                if (startTime) {
+                    elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+                } else {
+                    clearInterval(intervalId); // Stop interval if startTime became null
+                    intervalId = null;
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+                console.log("Timer stopped.");
+            }
+            if (startTime) {
+                // Calculate final elapsed time one last time
+                elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+                startTime = null; // Mark timer as stopped
+                console.log(`Final elapsed time recorded: ${elapsedTime}s`);
+            }
+            return elapsedTime; // Return total time spent in seconds
+        }
+        // --- End Timer Functions ---
+
+        // --- Theme Management ---
+        class ThemeManager {
+            constructor() {
+                this.theme = localStorage.getItem('theme') || 'light'; // Default to dark
+                this.init();
+            }
+            init() {
+                this.applyTheme();
+                this.setupToggle();
+            }
+            applyTheme() {
+                document.body.setAttribute('data-theme', this.theme);
+                this.updateToggleIcon();
+                // ** Update chart colors if chart exists **
+                if (window.myComplexityChart) { // Check if chart exists
+                    updateChartTheme(window.myComplexityChart); // Call the update function
+                }
+                if (window.mySpaceComplexityChart) { // ADD THIS
+                    updateSpaceChartTheme(window.mySpaceComplexityChart); // Update space complexity chart
+                }
+            }
+            updateToggleIcon() {
+                const toggleBtn = document.getElementById('theme-toggle-btn');
+                if (toggleBtn) {
+                    const icon = toggleBtn.querySelector('.theme-icon');
+                    if (icon) icon.textContent = this.theme === 'dark' ? '☀️' : '🌙';
+                }
+            }
+            setupToggle() {
+                const toggleBtn = document.getElementById('theme-toggle-btn');
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', () => this.toggleTheme());
+                }
+            }
+            toggleTheme() {
+                this.theme = this.theme === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('theme', this.theme);
+                this.applyTheme();
+            }
+        }
+        // --- End Theme Management ---
+
+        // --- Helper Functions ---
+        function handleArrayLayout() {
+            const container = document.querySelector('.array-container');
+            const arrayViewDiv = document.getElementById('array-view');
+            if (!container || !arrayViewDiv) return;
+
+            const isScrollable = arrayViewDiv.scrollWidth > container.clientWidth;
+            container.classList.toggle('scrollable', isScrollable);
+
+            if (isScrollable) {
+                const isAtStart = container.scrollLeft < 5;
+                const isAtEnd = container.scrollLeft >= container.scrollWidth - container.clientWidth - 5;
+                container.classList.toggle('scrolled-start', !isAtStart);
+                container.classList.toggle('scrolled-end', isAtEnd);
+            } else {
+                container.classList.remove('scrolled-start', 'scrolled-end');
+            }
+        }
+
+
+        function findCorrespondingStep(fromSteps, toSteps, currentIdx) {
+            if (!fromSteps || !toSteps || fromSteps.length === 0 || toSteps.length === 0) return 0; // Handle empty arrays
+            if (currentIdx >= fromSteps.length) return Math.max(0, toSteps.length - 1);
+            if (currentIdx < 0) return 0;
+
+            const currentStepData = fromSteps[currentIdx];
+            if (!currentStepData) return Math.floor(currentIdx / (fromSteps.length || 1) * toSteps.length); // Fallback
+
+            // Try precise matching first (type, i, j)
+            let bestMatch = -1;
+            for (let idx = 0; idx < toSteps.length; idx++) {
+                const targetStep = toSteps[idx];
+                if (targetStep.type === currentStepData.type && targetStep.i === currentStepData.i && targetStep.j === currentStepData.j) {
+                    bestMatch = idx;
+                    // Prioritize start/compare steps
+                    if (currentStepData.type?.includes('start') || currentStepData.type?.includes('compare')) {
+                        break;
+                    }
+                }
+            }
+            if (bestMatch !== -1) return bestMatch;
+
+            // Fallback: Match based on i and j only
+            for (let idx = 0; idx < toSteps.length; idx++) {
+                const targetStep = toSteps[idx];
+                if (targetStep.i === currentStepData.i && targetStep.j === currentStepData.j) {
+                    return idx; // Take the first i,j match
+                }
+            }
+
+            // Final Fallback: estimate position
+            console.warn(`Could not find step match for index ${currentIdx}, estimating position.`);
+            const progress = currentIdx / fromSteps.length;
+            return Math.min(toSteps.length - 1, Math.max(0, Math.floor(progress * toSteps.length)));
+        }
+
+        // --- Step Description Generation ---
+        function createStepDescription(type, data) {
+            const { i, j, a, order, orderText, comparisonText, compareFunc, n, swapped } = data || {};
+
+            // Basic check for essential data in some types
+            if ((type === 'comparing' || type === 'swap-step') && (a === undefined || j === undefined)) return '<p>Error generating description: Missing data.</p>';
+            if ((type === 'pass-start' || type === 'inner-loop-complete') && (i === undefined || a === undefined || n === undefined)) return '<p>Error generating description: Missing data.</p>';
+
+
+            switch (type) {
+                case 'start': // Conceptual start
+                    return `<div class="step-header"><span class="step-icon">🏁</span> <h4 class="step-title">Start Bubble Sort</h4></div><div class="step-section"><div class="section-content">Beginning the sorting process.</div></div>`;
+                case 'init': // Line 3
+                    return `<div class="step-header"><span class="step-icon">🔢</span> <h4 class="step-title">Initialize Length</h4></div><div class="step-section"><div class="section-label">Line 3</div><div class="section-content">Set variable n = ${n ?? '?'} (length of the array).</div></div>`;
+                case 'pass-start': // Line 4
+                    return `
+            <div class="step-header"><span class="step-icon">🔄</span> <h4 class="step-title">Pass ${i + 1} Started</h4></div>
+            <div class="step-section"><div class="section-label">Line 4</div><div class="section-content">Starting outer loop (pass) with i = ${i}. This pass will place the next ${order === "asc" ? "largest" : "smallest"} element correctly.</div></div>
+            <div class="step-section"><div class="section-label">Objective</div><div class="section-content">Ensure element at index ${n - 1 - i} is sorted. Comparisons will go up to index ${n - i - 2}.</div></div>`;
+                case 'flag-init': // Line 5
+                    return `<div class="step-header"><span class="step-icon">🚩</span> <h4 class="step-title">Initialize Swap Flag</h4></div><div class="step-section"><div class="section-label">Line 5</div><div class="section-content">Set swapped = false at the start of Pass ${i + 1}. Used for optimization.</div></div>`;
+                case 'inner-loop-start': // Line 6
+                    return `
+            <div class="step-header"><span class="step-icon">🔍</span> <h4 class="step-title">Inner Loop - Compare Indices ${j} & ${j + 1}</h4></div>
+            <div class="step-section"><div class="section-label">Line 6</div><div class="section-content">Starting inner loop comparison at index j = ${j}.</div></div>`;
+                case 'comparing': // Line 7 (Condition Check)
+                    if (!a || a[j] === undefined || a[j + 1] === undefined || typeof compareFunc !== 'function') return `<p>Error comparing: Invalid data.</p>`;
+                    const needsSwap = compareFunc(a[j], a[j + 1]);
+                    return `
+            <div class="step-header"><span class="step-icon">⚖️</span> <h4 class="step-title">Comparing Elements</h4></div>
+            <div class="step-section"><div class="section-label">Condition (Line 7)</div><div class="section-content">Check if arr[${j}] (${a[j]}) ${order === "asc" ? ">" : "<"} arr[${j + 1}] (${a[j + 1]}).</div></div>
+            <div class="step-section"><div class="section-label">Result</div><div class="section-content"><div class="comparison-result ${needsSwap ? 'result-true' : 'result-false'}">${needsSwap ? `✓ Condition is true (${a[j]} ${comparisonText ?? '?'} ${a[j + 1]}). Swap needed.` : `✗ Condition is false. No swap needed.`}</div></div></div>`;
+                case 'swapping': // Animated Swap (Conceptual Lines 8-11)
+                    return `
+            <div class="step-header"><span class="step-icon">↔️</span> <h4 class="step-title">Swapping Elements</h4></div>
+            <div class="step-section"><div class="section-label">Action (Lines 9-11)</div><div class="section-content">Swapping values at index ${j} (${data.preSwapA ?? '?'}) and index ${j + 1} (${data.preSwapB ?? '?'}).</div></div>`;
+                case 'swap-step': // Detailed Swap Steps
+                    const { step, stepDesc: swapStepDesc } = data; // Renamed stepDesc to avoid conflict
+                    const lineMap = { 1: 9, 2: 10, 3: 11 };
+                    return `
+            <div class="step-header"><span class="step-icon">⚙️</span> <h4 class="step-title">Swap Step ${step} (Line ${lineMap[step]})</h4></div>
+            <div class="step-section"><div class="section-label">Process</div><div class="section-content">${swapStepDesc ?? ''}</div></div>`;
+                case 'flag-set': // Line 12
+                    return `<div class="step-header"><span class="step-icon">🚩</span> <h4 class="step-title">Update Swap Flag</h4></div><div class="step-section"><div class="section-label">Line 12</div><div class="section-content">Set swapped = true because a swap occurred in this pass.</div></div>`;
+                case 'end-if': // Line 13 (End of if block)
+                    return `<div class="step-header"><span class="step-icon">➡️</span> <h4 class="step-title">Continue Inner Loop</h4></div><div class="step-section"><div class="section-label">Flow (After Line 13)</div><div class="section-content">Moving to the next inner loop iteration (j = ${j + 1}).</div></div>`;
+                case 'inner-loop-complete': // Line 14 (End of inner loop)
+                    return `
+            <div class="step-header"><span class="step-icon">🏁</span> <h4 class="step-title">Inner Loop Finished for Pass ${i + 1}</h4></div>
+            <div class="step-section"><div class="section-label">Line 14</div><div class="section-content">Completed all comparisons for this pass. Element at index ${n - 1 - i} is now in its sorted position.</div></div>`;
+                case 'check-swap-flag': // Line 16 (Optimization Check)
+                    return `
+            <div class="step-header"><span class="step-icon">⏱️</span> <h4 class="step-title">Check Optimization</h4></div>
+            <div class="step-section"><div class="section-label">Condition (Line 16)</div><div class="section-content">Check if swapped is false. Current value: <strong>${swapped}</strong>.</div></div>`;
+                case 'early-termination': // Line 16 (Break)
+                    return `
+              <div class="step-header"><span class="step-icon">⚡</span> <h4 class="step-title">Early Termination</h4></div>
+              <div class="step-section"><div class="section-label">Action (Line 16)</div><div class="section-content">Since swapped is false, the array is already sorted. Breaking the outer loop.</div></div>`;
+                case 'pass-complete': // Line 17 (End of outer loop iteration)
+                    return `
+            <div class="pass-complete-display">
+              <div class="pass-complete-title">🎯 Pass ${i + 1} Complete! (End of Line 17)</div>
+              <div class="pass-complete-details">Element at index ${n - 1 - i} (value ${a?.[n - 1 - i] ?? '?'}) is sorted. Proceeding to next pass (i = ${i + 1}).</div>
+            </div>`;
+                case 'sorting-complete': // Line 18/19 or after early termination
+                    const endLine = data?.terminatedEarly ? 17 : 19; // Corrected line numbers
+                    const finalSortedArray = Array.isArray(a) ? a.join(", ") : 'Error';
+                    return `
+            <div class="final-result-display">
+              <div class="final-result-title">🎉 Sorting Complete! (After Line ${endLine})</div>
+              <div class="step-section"><div class="section-label">Result</div><div class="section-content">The array is now fully sorted in ${orderText ?? '?'} order. <div class="final-array-display">[${finalSortedArray}]</div></div></div>
+            </div>`;
+                default: return `<p>Loading description...</p>`;
+            }
+        }
+
+        // --- prepareBubbleSortSteps ---
+        function prepareBubbleSortSteps(arr, order = "asc") {
+            let a = arr.slice();
+            const n = a.length;
+            let detailed = [];
+            let compact = [];
+            let sortedIndices = Array(n).fill(false);
+            const compareFunc = order === "asc" ? (x, y) => x > y : (x, y) => x < y;
+            const orderText = order === "asc" ? "ascending" : "descending";
+            const comparisonText = order === "asc" ? ">" : "<"; // Use symbol for comparison text
+
+            detailed.push({ type: 'start', a: a.slice(), i: null, j: null, compare: [], swap: [], sorted: sortedIndices.slice(), desc: createStepDescription('start', {}), codeLines: [2], done: false });
+            compact.push(detailed[detailed.length - 1]);
+
+            detailed.push({ type: 'init', a: a.slice(), i: null, j: null, compare: [], swap: [], sorted: sortedIndices.slice(), desc: createStepDescription('init', { n }), codeLines: [3], done: false });
+            compact.push(detailed[detailed.length - 1]);
+
+            outerLoop:
+            for (let i = 0; i < n - 1; i++) {
+                detailed.push({ type: 'pass-start', a: a.slice(), i, j: null, compare: [], swap: [], sorted: sortedIndices.slice(), desc: createStepDescription('pass-start', { i, a: a.slice(), order, orderText, n }), codeLines: [4], done: false });
+                compact.push(detailed[detailed.length - 1]);
+
+                let swapped = false;
+                detailed.push({ type: 'flag-init', a: a.slice(), i, j: null, compare: [], swap: [], sorted: sortedIndices.slice(), desc: createStepDescription('flag-init', { i }), codeLines: [5], done: false });
+                compact.push(detailed[detailed.length - 1]);
+
+                for (let j = 0; j < n - i - 1; j++) {
+                    detailed.push({ type: 'inner-loop-start', a: a.slice(), i, j, compare: [], swap: [], sorted: sortedIndices.slice(), desc: createStepDescription('inner-loop-start', { i, j, orderText }), codeLines: [6], done: false });
+                    // Don't add inner-loop-start to compact, combine with comparing
+
+                    const preCompareState = a.slice();
+                    const needsSwap = compareFunc(a[j], a[j + 1]);
+                    const comparingDesc = createStepDescription('comparing', { i, j, a: preCompareState, order, orderText, comparisonText, compareFunc });
+
+                    detailed.push({ type: 'comparing', a: preCompareState, i, j, compare: [j, j + 1], swap: [], sorted: sortedIndices.slice(), desc: comparingDesc, codeLines: [7], done: false });
+                    // Add comparing step to compact as well
+                    compact.push({ type: 'comparing', a: preCompareState, i, j, compare: [j, j + 1], swap: [], sorted: sortedIndices.slice(), desc: comparingDesc, codeLines: [7], done: false });
+
+
+                    if (needsSwap) {
+                        const preSwapA = a[j];
+                        const preSwapB = a[j + 1];
+                        [a[j], a[j + 1]] = [a[j + 1], a[j]];
+                        const postSwapState = a.slice();
+                        const swappingDesc = createStepDescription('swapping', { i, j, a: postSwapState, orderText, preSwapA, preSwapB });
+
+                        // Detailed swap steps
+                        detailed.push({ type: 'swap-step', a: postSwapState, i, j, compare: [], swap: [j, j + 1], sorted: sortedIndices.slice(), desc: createStepDescription('swap-step', { step: 1, stepDesc: `Store original arr[${j}] (value ${preSwapA}) in 'temp'.` }), codeLines: [9], animateSwapStep: false, done: false });
+                        detailed.push({ type: 'swap-step', a: postSwapState, i, j, compare: [], swap: [j, j + 1], sorted: sortedIndices.slice(), desc: createStepDescription('swap-step', { step: 2, stepDesc: `Set arr[${j}] = original arr[${j + 1}] (value ${a[j]}).` }), codeLines: [10], animateSwapStep: false, done: false });
+                        detailed.push({ type: 'swap-step', a: postSwapState, i, j, compare: [], swap: [j, j + 1], sorted: sortedIndices.slice(), desc: createStepDescription('swap-step', { step: 3, stepDesc: `Set arr[${j + 1}] = temp (value ${a[j + 1]}).` }), codeLines: [11], animateSwapStep: false, done: false });
+
+                        // Compact swap step (includes animation trigger)
+                        compact.push({ type: 'swap', a: postSwapState, i, j, compare: [], swap: [j, j + 1], sorted: sortedIndices.slice(), desc: swappingDesc, codeLines: [8, 9, 10, 11], isCombined: true, animateSwapStep: true, done: false });
+
+                        swapped = true;
+                        detailed.push({ type: 'flag-set', a: postSwapState, i, j, compare: [], swap: [j, j + 1], sorted: sortedIndices.slice(), desc: createStepDescription('flag-set', { i }), codeLines: [12], done: false });
+                        compact.push(detailed[detailed.length - 1]); // Add flag set to compact
+                    }
+
+                    detailed.push({ type: 'end-if', a: a.slice(), i, j, compare: [], swap: [], sorted: sortedIndices.slice(), desc: createStepDescription('end-if', { i, j }), codeLines: [13], done: false });
+                    // Don't add end-if to compact
+
+                } // End inner loop
+
+                const currentInnerLoopEndState = a.slice();
+                if (n - 1 - i >= 0) { sortedIndices[n - 1 - i] = true; }
+
+                detailed.push({ type: 'inner-loop-complete', a: currentInnerLoopEndState, i, j: null, compare: [], swap: [], sorted: sortedIndices.slice(), desc: createStepDescription('inner-loop-complete', { i, a: currentInnerLoopEndState, n }), codeLines: [14], done: false });
+                compact.push(detailed[detailed.length - 1]);
+
+                detailed.push({ type: 'check-swap-flag', a: currentInnerLoopEndState, i, j: null, compare: [], swap: [], sorted: sortedIndices.slice(), desc: createStepDescription('check-swap-flag', { i, swapped }), codeLines: [16], done: false });
+                compact.push(detailed[detailed.length - 1]);
+
+                if (!swapped) {
+                    const finalSortedForTerm = a.slice();
+                    sortedIndices.fill(true);
+                    const finalDesc = createStepDescription('early-termination', { i }) + createStepDescription('sorting-complete', { a: finalSortedForTerm, orderText, terminatedEarly: true });
+                    const terminationStep = { type: 'early-termination', a: finalSortedForTerm, i, j: null, compare: [], swap: [], sorted: sortedIndices.slice(), desc: finalDesc, done: true, codeLines: [16] };
+                    detailed.push(terminationStep);
+                    compact.push(terminationStep);
+                    break outerLoop;
+                }
+
+                detailed.push({ type: 'pass-complete', a: a.slice(), i, j: null, compare: [], swap: [], sorted: sortedIndices.slice(), desc: createStepDescription('pass-complete', { i, a: a.slice(), orderText, n }), codeLines: [17], passComplete: true, passNumber: i + 1, done: false });
+                compact.push(detailed[detailed.length - 1]);
+
+            } // End outer loop
+
+            const lastDetailedStep = detailed[detailed.length - 1];
+            if (!lastDetailedStep || !lastDetailedStep.done) {
+                sortedIndices.fill(true);
+                const finalArrayState = arr.slice().sort((x, y) => order === 'asc' ? x - y : y - x);
+                const finalStep = { type: 'sorting-complete', a: finalArrayState, i: null, j: null, compare: [], swap: [], sorted: sortedIndices.slice(), desc: createStepDescription('sorting-complete', { a: finalArrayState, orderText, terminatedEarly: false }), done: true, codeLines: [18, 19] };
+                detailed.push(finalStep);
+                compact.push(finalStep);
+            }
+
+            return { detailedSteps: detailed, compactSteps: compact };
+        }
+
+
+        // Live array visualization as user types
+        function createLiveArrayVisualization() {
+            arrayView.innerHTML = "";
+            const raw = arrayInput.value.trim();
+            let numbers = [];
+
+            if (raw.length === 0) {
+                const emptyBox = document.createElement("div");
+                emptyBox.classList.add("array-cell", "empty-cell");
+                emptyBox.innerHTML = `<span style="color: var(--text-muted-light); font-size: 0.875rem;">?</span><div class="array-index">0</div>`;
+                arrayView.appendChild(emptyBox);
+                numberCountSpan.textContent = `Numbers in Array: 0`;
+                numberCountSpan.style.color = "var(--text-muted-light)";
+            } else {
+                const rawNumbers = raw.split(",")
+                    .map(s => s.trim())
+                    .filter(s => s.length > 0);
+
+                numberCountSpan.textContent = `Numbers in Array: ${rawNumbers.length}`;
+                const tooMany = rawNumbers.length > 10;
+                numberCountSpan.style.color = tooMany ? "var(--error)" : "var(--text-muted-light)";
+
+                numbers = rawNumbers.slice(0, 10); // Only take the first 10
+
+                numbers.forEach((numStr, idx) => {
+                    const div = document.createElement("div");
+                    div.classList.add("array-cell");
+                    const num = Number(numStr);
+                    if (isNaN(num) || numStr === "") {
+                        div.classList.add("invalid-cell");
+                        div.textContent = "?";
+                    } else {
+                        div.classList.add("live-cell");
+                        div.textContent = num;
+                    }
+                    div.setAttribute("data-idx", idx);
+                    const idxLabel = document.createElement("div");
+                    idxLabel.classList.add("array-index");
+                    idxLabel.textContent = idx;
+                    div.appendChild(idxLabel);
+                    arrayView.appendChild(div);
+                });
+
+                if (tooMany) {
+                    const warningBox = document.createElement("div");
+                    warningBox.classList.add("array-cell", "warning-cell");
+                    warningBox.innerHTML = `<span style="color: var(--error); font-size: 0.75rem;" title="Input limited to 10 numbers for visualization">...</span><div class="array-index">${numbers.length}</div>`;
+                    arrayView.appendChild(warningBox);
+                }
+            }
+            requestAnimationFrame(handleArrayLayout); // Update layout
+        }
+
+        // Render array visualization based on step data
+        function renderArray(step, animate = true, onSwapDone = null) {
+            arrayView.innerHTML = "";
+            if (!step || !step.a || !Array.isArray(step.a) || step.a.length === 0) {
+                if (typeof onSwapDone === "function") setTimeout(onSwapDone, 0);
+                return;
+            }
+
+            let displayArray = step.a.slice();
+            let isAnimatedSwapStep = animate && step.swap && step.swap.length === 2 && step.animateSwapStep && stepMode === 'compact'; // Animate only in compact mode
+
+            // Determine the array state *before* the animation starts (only for compact mode animation)
+            if (isAnimatedSwapStep) {
+                let lookBackIndex = currentStep - 1;
+                let actualPrevStep = null;
+                while (lookBackIndex >= 0) {
+                    actualPrevStep = steps[lookBackIndex];
+                    // Stop if we find the 'comparing' step for the same i,j in compact mode
+                    if (actualPrevStep && actualPrevStep.i === step.i && actualPrevStep.j === step.j && actualPrevStep.type === 'comparing') {
+                        break;
+                    }
+                    if (lookBackIndex < currentStep - 5) { // Safety break
+                        actualPrevStep = null; break;
+                    }
+                    lookBackIndex--;
+                }
+                if (actualPrevStep && actualPrevStep.a) displayArray = actualPrevStep.a.slice();
+                else isAnimatedSwapStep = false; // Fallback: Render target state, skip animation
+            }
+
+            // Create array cells
+            displayArray.forEach((val, idx) => {
+                const div = document.createElement("div");
+                div.classList.add("array-cell");
+                const sortedIndices = Array.isArray(step.sorted) ? step.sorted : [];
+                const compareIndices = Array.isArray(step.compare) ? step.compare : [];
+                const swapIndices = Array.isArray(step.swap) ? step.swap : [];
+
+                if (step.passComplete && sortedIndices[idx]) div.classList.add("pass-complete");
+                else if (sortedIndices[idx]) div.classList.add("sorted");
+                if (compareIndices.includes(idx)) div.classList.add("compare");
+                if (swapIndices.includes(idx) && isAnimatedSwapStep) div.classList.add("swap"); // Class for animation trigger
+
+                div.textContent = val;
+                div.setAttribute("data-idx", String(idx));
+                const idxLabel = document.createElement("div");
+                idxLabel.classList.add("array-index");
+                idxLabel.textContent = idx;
+                div.appendChild(idxLabel);
+                arrayView.appendChild(div);
+            });
+
+            requestAnimationFrame(handleArrayLayout); // Update layout
+
+            // Trigger animation if needed (only in compact mode)
+            if (isAnimatedSwapStep) {
+                isSwapping = true;
+                animateSwap(step.swap[0], step.swap[1], () => {
+                    isSwapping = false;
+                    renderArray(step, false); // Re-render final state without animation
+                    if (typeof onSwapDone === "function") setTimeout(onSwapDone, 0);
+                });
+            } else {
+                // Re-render final state if mismatch detected (safety check)
+                let displayedValues = Array.from(arrayView.querySelectorAll('.array-cell:not(.warning-cell)'))
+                    .map(cell => Number(cell.childNodes[0]?.textContent?.trim() || NaN))
+                    .filter(v => !isNaN(v));
+                if (JSON.stringify(displayedValues) !== JSON.stringify(step.a)) {
+                    console.log("Post-render mismatch, re-rendering final step state.");
+                    renderArray(step, false);
+                }
+                if (typeof onSwapDone === "function") setTimeout(onSwapDone, 0);
+            }
+        }
+
+
+        // 3-Stage Swap animation
+        function animateSwap(i, j, onSwapDone) {
+            const indexI = Number(i);
+            const indexJ = Number(j);
+            const cells = arrayView.querySelectorAll(".array-cell");
+            const cellA = Array.from(cells).find(cell => cell.getAttribute("data-idx") === String(indexI));
+            const cellB = Array.from(cells).find(cell => cell.getAttribute("data-idx") === String(indexJ));
+
+            if (!cellA || !cellB) {
+                if (onSwapDone) setTimeout(onSwapDone, 0); return;
+            }
+
+            const rectA = cellA.getBoundingClientRect();
+            const rectB = cellB.getBoundingClientRect();
+            const containerRect = arrayView.getBoundingClientRect();
+            const deltaX = (rectB.left - containerRect.left) - (rectA.left - containerRect.left);
+            const liftY = -30; // Reduced lift
+
+            cellA.style.position = "relative"; cellB.style.position = "relative";
+            cellA.style.zIndex = "100"; cellB.style.zIndex = "90";
+
+            // Stage 1: Lift
+            cellA.style.transition = "transform 0.15s ease-out"; cellB.style.transition = "transform 0.15s ease-out";
+            cellA.style.transform = `translateY(${liftY}px)`; cellB.style.transform = `translateY(${liftY}px)`;
+
+            setTimeout(() => {
+                // Stage 2: Slide
+                cellA.style.transition = "transform 0.3s ease-in-out"; cellB.style.transition = "transform 0.3s ease-in-out";
+                cellA.style.transform = `translateX(${deltaX}px) translateY(${liftY}px)`;
+                cellB.style.transform = `translateX(${-deltaX}px) translateY(${liftY}px)`;
+
+                setTimeout(() => {
+                    // Stage 3: Settle
+                    cellA.style.transition = "transform 0.2s ease-in"; cellB.style.transition = "transform 0.2s ease-in";
+                    cellA.style.transform = `translateX(${deltaX}px) translateY(0)`;
+                    cellB.style.transform = `translateX(${-deltaX}px) translateY(0)`;
+
+                    setTimeout(() => {
+                        // Cleanup
+                        cellA.style.transition = ""; cellB.style.transition = "";
+                        cellA.style.transform = ""; cellB.style.transform = "";
+                        cellA.style.position = ""; cellB.style.position = "";
+                        cellA.style.zIndex = ""; cellB.style.zIndex = "";
+                        if (onSwapDone) setTimeout(onSwapDone, 0);
+                    }, 200); // Wait settle
+                }, 300); // Wait slide
+            }, 150); // Wait lift
+        }
+
+        // --- Render UI Elements ---
+        function renderVariableState(step) {
+            if (!variableState) return;
+            variableState.innerHTML = "";
+            if (!step) { variableState.innerHTML = "Initializing..."; return; }
+            const parts = [];
+            if (step.i !== null && step.i !== undefined) parts.push(`<b>i (pass)</b> = ${step.i}`);
+            if (step.j !== null && step.j !== undefined) parts.push(`<b>j (index)</b> = ${step.j}`);
+
+            if (step.done) variableState.innerHTML = `<b>Sorting Completed</b>`;
+            else if (parts.length > 0) variableState.innerHTML = parts.join("&nbsp;&nbsp;|&nbsp;&nbsp;");
+            else variableState.innerHTML = "Processing...";
+        }
+
+        function renderStepDesc(step) {
+            if (!stepDesc) return;
+            stepDesc.innerHTML = step ? step.desc : "<p>Enter an array and click Start.</p>";
+            stepDesc.scrollTop = 0; // Scroll to top on new description
+        }
+
+        function renderComplexities() {
+            if (timeComplexitySpan) timeComplexitySpan.textContent = "Best: O(n), Avg/Worst: O(n²)";
+            if (spaceComplexitySpan) spaceComplexitySpan.textContent = "O(1)";
+        }
+
+        function renderResult(step) {
+            if (!resultSpan) return;
+            const shouldShow = step?.done;
+            resultSpan.classList.toggle('show', shouldShow); // Use class for opacity transition
+
+            if (shouldShow) {
+                resultSpan.textContent = "🎉 Sorting Completed!";
+                if (variableState) variableState.innerHTML = `<b>Sorting Completed</b>`;
+
+                if (!progressSentForThisView) {
+                    console.log('Visualization complete or terminated, sending viewing time.');
+                    sendVisualizationProgressUpdate();
+                }
+            } else {
+                // Clear text immediately if not shown
+                resultSpan.textContent = "";
+            }
+        }
+
+        function highlightCodeLines(lines) {
+            if (!codeBlock) return;
+            const linesToHighlight = Array.isArray(lines) ? lines : [];
+            codeBlock.innerHTML = bubbleSortCodeLines.map((line, idx) => {
+                if (idx > 0 && linesToHighlight.includes(idx)) {
+                    return `<span class="highlight">${line}</span>`;
+                }
+                return line;
+            }).join("\n");
+        }
+        // --- End Render UI ---
+
+        // --- Main Rendering Orchestrator ---
+        function renderCurrentStep(manual = false) {
+            if (!steps || steps.length === 0) {
+                updateButtonState(); return;
+            }
+            if (currentStep < 0 || currentStep >= steps.length) {
+                if (isPlaying) pauseAutoplay();
+                currentStep = Math.max(0, Math.min(steps.length - 1, currentStep));
+            }
+
+            const step = steps[currentStep];
+            if (!step) {
+                if (isPlaying) pauseAutoplay();
+                updateButtonState(); return;
+            }
+
+            let needsAnimation = step.animateSwapStep && isPlaying && stepMode === 'compact' && !manual;
+
+            const afterRenderOrAnimation = () => {
+                renderVariableState(step);
+                renderStepDesc(step);
+                highlightCodeLines(step.codeLines);
+                renderResult(step);
+                updateButtonState();
+
+                if (isPlaying && !isSwapping) {
+                    if (currentStep < steps.length - 1 && !step.done) {
+                        let delay = step.passComplete ? Math.max(1000, autoplayDelay * 1.5) : autoplayDelay; // Adjusted pass complete delay
+                        if (needsAnimation) delay = Math.max(50, autoplayDelay / 3); // Shorter delay after compact animation
+
+                        if (autoplayTimer) clearTimeout(autoplayTimer);
+                        autoplayTimer = setTimeout(() => {
+                            if (!isPlaying) return;
+                            currentStep++;
+                            autoplayNext();
+                        }, delay);
+                    } else {
+                        isPlaying = false;
+                        if (!step.done && steps.length > 0) renderResult(steps[steps.length - 1]);
+                        else renderResult(step);
+                        updateButtonState();
+                    }
+                }
+            };
+
+            if (needsAnimation) {
+                isSwapping = true;
+                renderArray(step, true, () => {
+                    isSwapping = false;
+                    afterRenderOrAnimation();
+                });
+            } else {
+                renderArray(step, false, afterRenderOrAnimation);
+            }
+        }
+
+        function updateButtonState() {
+            if (!prevBtn || !nextBtn || !pausePlayBtn) return;
+            pausePlayBtn.innerHTML = `<span>${isPlaying ? "⏸ Pause" : "▶ Play"}</span>`;
+
+            const noSteps = !steps || steps.length === 0;
+            const isAtStart = currentStep <= 0;
+            const isEffectivelyAtEnd = noSteps || currentStep >= steps.length - 1 || (steps[currentStep] && steps[currentStep].done);
+
+            prevBtn.disabled = noSteps || isPlaying || isSwapping || isAtStart;
+            nextBtn.disabled = noSteps || isPlaying || isSwapping || isEffectivelyAtEnd;
+            pausePlayBtn.disabled = noSteps || isSwapping || isEffectivelyAtEnd;
+
+            // Additional check: disable play if paused exactly on the last/done step
+            if (!isPlaying && isEffectivelyAtEnd) pausePlayBtn.disabled = true;
+        }
+
+        // --- Autoplay Functions ---
+        function startAutoplay() {
+            const isAtEnd = !steps || steps.length === 0 || currentStep >= steps.length - 1 || (steps[currentStep] && steps[currentStep].done);
+            if (isPlaying || isAtEnd) { updateButtonState(); return; }
+
+            isPlaying = true;
+            if (stepMode === "detailed") {
+                const newStepIndex = findCorrespondingStep(detailedSteps, compactSteps, currentStep);
+                stepMode = "compact"; steps = compactSteps; currentStep = newStepIndex;
+            }
+            if (!startTime && currentStep > 0) startTimer();
+            updateButtonState();
+            autoplayNext();
+        }
+
+        function autoplayNext() {
+            if (!isPlaying) return;
+            const isAtEnd = !steps || steps.length === 0 || currentStep >= steps.length || (steps[currentStep] && steps[currentStep].done);
+            if (isAtEnd) {
+                isPlaying = false;
+                if (currentStep >= steps.length && steps.length > 0) currentStep = steps.length - 1;
+                if (steps[currentStep]) renderCurrentStep(false);
+                updateButtonState(); return;
+            }
+            renderCurrentStep(false);
+        }
+
+        function pauseAutoplay() {
+            if (!isPlaying) return;
+            if (autoplayTimer) { clearTimeout(autoplayTimer); autoplayTimer = null; }
+            isPlaying = false; isSwapping = false;
+
+            if (stepMode === "compact") {
+                const newStepIndex = findCorrespondingStep(compactSteps, detailedSteps, currentStep);
+                stepMode = "detailed"; steps = detailedSteps; currentStep = newStepIndex;
+                renderCurrentStep(true); // Render mapped detailed step
+            } else {
+                renderCurrentStep(true); // Re-render current detailed step
+            }
+            updateButtonState();
+        }
+
+        // --- Controls ---
+        function startVisualization() {
+            const raw = arrayInput.value.trim();
+            let inputNumbers = raw.length === 0 ? [] : raw.split(",").map(s => s.trim()).filter(s => s.length > 0);
+
+            if (inputNumbers.length === 0) { alert("Please enter at least one number."); return; }
+            if (inputNumbers.length > 10) {
+                alert("Visualizing only the first 10 numbers.");
+                inputNumbers = inputNumbers.slice(0, 10);
+                arrayInput.value = inputNumbers.join(', ');
+                createLiveArrayVisualization();
+            }
+            array = inputNumbers.map(Number);
+            if (array.some(isNaN)) { alert("Please enter only valid numbers."); return; }
+
+            stopTimer(); elapsedTime = 0; progressSentForThisView = false;
+            startTimer();
+
+            const order = orderSelect.value === "desc" ? "desc" : "asc";
+            if (isPlaying) pauseAutoplay();
+            if (autoplayTimer) { clearTimeout(autoplayTimer); autoplayTimer = null; }
+
+            const generated = prepareBubbleSortSteps(array, order);
+            detailedSteps = generated.detailedSteps; compactSteps = generated.compactSteps;
+            stepMode = "detailed"; steps = detailedSteps;
+            currentStep = 0; isPlaying = false; isSwapping = false;
+
+            renderCurrentStep(true);
+            renderComplexities();
+            updateButtonState();
+        }
+
+        // --- Event Listeners ---
+        arrayInput.addEventListener("input", () => {
+            if (isPlaying || startTime || currentStep > 0) {
+                if (isPlaying) pauseAutoplay();
+                stopTimer(); elapsedTime = 0; progressSentForThisView = false;
+                steps = []; detailedSteps = []; compactSteps = []; currentStep = 0;
+                highlightCodeLines([]); renderVariableState(null); renderStepDesc(null);
+                renderResult(null); updateButtonState();
+            }
+            createLiveArrayVisualization();
+        });
+
+        startBtn.onclick = () => { progressSentForThisView = false; startVisualization(); };
+        pausePlayBtn.onclick = () => { if (!steps || steps.length === 0) return; if (isPlaying) pauseAutoplay(); else { const isAtEnd = currentStep >= steps.length - 1 || (steps[currentStep] && steps[currentStep].done); if (!startTime && !isAtEnd) startTimer(); autoplayDelay = calcAutoplayDelay(parseInt(speedSlider.value, 10)); startAutoplay(); } };
+        nextBtn.onclick = () => { const isAtEnd = !steps || steps.length === 0 || currentStep >= steps.length - 1 || (steps[currentStep] && steps[currentStep].done); if (isSwapping || isPlaying || isAtEnd) return; if (!startTime && currentStep === 0) startTimer(); if (stepMode === "compact") { const newStepIndex = findCorrespondingStep(compactSteps, detailedSteps, currentStep); stepMode = "detailed"; steps = detailedSteps; currentStep = newStepIndex; renderCurrentStep(true); return; } currentStep++; renderCurrentStep(true); };
+        prevBtn.onclick = () => { if (isSwapping || isPlaying || currentStep <= 0) return; if (stepMode === "compact") { const newStepIndex = findCorrespondingStep(compactSteps, detailedSteps, currentStep); stepMode = "detailed"; steps = detailedSteps; currentStep = newStepIndex; } if (currentStep > 0) currentStep--; renderCurrentStep(true); };
+
+        speedSlider.oninput = () => {
+            autoplayDelay = calcAutoplayDelay(parseInt(speedSlider.value, 10));
+            speedValue.textContent = `${speedSlider.value}`;
+            if (isPlaying && autoplayTimer) {
+                clearTimeout(autoplayTimer);
+                autoplayTimer = setTimeout(() => { if (!isPlaying) return; autoplayNext(); }, autoplayDelay);
+            }
+        };
+
+        arrayInput.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); progressSentForThisView = false; startVisualization(); } });
+
+        // Scroll listener for array container
+        const arrayContainer = document.querySelector('.array-container');
+        if (arrayContainer) {
+            arrayContainer.addEventListener('scroll', handleArrayLayout);
+        }
+
+        // --- Chart Generation ---
+        // (Included from previous response)
+        let myComplexityChart = null; // Store chart instance globally
+
+        function createComplexityChart() {
+            const ctx = document.getElementById('complexityChart');
+            if (!ctx) { console.error("Canvas element for chart not found!"); return; }
+            if (myComplexityChart) { myComplexityChart.destroy(); } // Destroy previous chart if exists
+
+            const labels = []; const dataPoints = [];
+            const maxN = 25; const step = Math.max(1, Math.floor(maxN / 10));
+            for (let n = 0; n <= maxN; n += step) { labels.push(n); dataPoints.push(n * n); }
+            if (labels[labels.length - 1] < maxN) { labels.push(maxN); dataPoints.push(maxN * maxN); }
+
+            const isDarkMode = document.body.getAttribute('data-theme') === 'dark';
+            const gridColor = isDarkMode ? 'rgba(100, 116, 139, 0.2)' : 'rgba(203, 213, 225, 0.5)';
+            const labelColor = isDarkMode ? '#cbd5e1' : '#475569';
+            const pointColor = isDarkMode ? '#60a5fa' : '#3b82f6';
+
+            myComplexityChart = new Chart(ctx, { // Assign to global variable
+                type: 'line',
+                data: { labels: labels, datasets: [{ label: 'Operations (Approx. n²)', data: dataPoints, borderColor: pointColor, backgroundColor: 'rgba(59, 130, 246, 0.1)', tension: 0.1, pointRadius: 3, pointBackgroundColor: pointColor, fill: true, }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (ctx) => `~${ctx.parsed.y} ops for n=${ctx.parsed.x}` } },
+                        title: { display: true, text: 'Time Complexity Growth (O(n²))', color: labelColor, font: { size: 14, weight: 'bold', family: 'Inter, sans-serif' }, padding: { top: 0, bottom: 10 } }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Input Size (n)', color: labelColor, font: { family: 'Inter, sans-serif' } }, grid: { color: gridColor }, ticks: { color: labelColor, font: { family: 'Inter, sans-serif' } } },
+                        y: { title: { display: true, text: 'Operations', color: labelColor, font: { family: 'Inter, sans-serif' } }, beginAtZero: true, grid: { color: gridColor }, ticks: { color: labelColor, font: { family: 'Inter, sans-serif' } } }
+                    }
+                }
+            });
+            window.myComplexityChart = myComplexityChart; // Assign to window for theme manager access
+        }
+
+        // Function to update chart theme
+        function updateChartTheme(chart) {
+            if (!chart) return;
+            const isDarkMode = document.body.getAttribute('data-theme') === 'dark';
+            const gridColor = isDarkMode ? 'rgba(100, 116, 139, 0.2)' : 'rgba(203, 213, 225, 0.5)';
+            const labelColor = isDarkMode ? '#cbd5e1' : '#475569';
+            const pointColor = isDarkMode ? '#60a5fa' : '#3b82f6';
+
+            // Update colors
+            chart.options.plugins.title.color = labelColor;
+            chart.options.scales.x.title.color = labelColor;
+            chart.options.scales.x.grid.color = gridColor;
+            chart.options.scales.x.ticks.color = labelColor;
+            chart.options.scales.y.title.color = labelColor;
+            chart.options.scales.y.grid.color = gridColor;
+            chart.options.scales.y.ticks.color = labelColor;
+            chart.data.datasets[0].borderColor = pointColor;
+            chart.data.datasets[0].pointBackgroundColor = pointColor;
+            // Update background color slightly for dark mode
+            chart.data.datasets[0].backgroundColor = isDarkMode ? 'rgba(96, 165, 250, 0.1)' : 'rgba(59, 130, 246, 0.1)';
+
+
+            chart.update();
+        }
+        // --- End Chart Generation ---
+
+        // --- Space Complexity Chart ---
+        let mySpaceComplexityChart = null; // Store chart instance globally
+
+        function createSpaceComplexityChart() {
+            const ctx = document.getElementById('spaceComplexityChart');
+            if (!ctx) { console.error("Canvas element for space chart not found!"); return; }
+            if (mySpaceComplexityChart) { mySpaceComplexityChart.destroy(); } // Destroy previous chart if exists
+
+            const labels = [];
+            const dataPoints = [];
+            const maxN = 25; // Match the N range of the time complexity chart
+            const step = Math.max(1, Math.floor(maxN / 10));
+
+            // For O(1), the value is constant (e.g., 1 unit of space) regardless of N
+            for (let n = 0; n <= maxN; n += step) {
+                labels.push(n);
+                dataPoints.push(1); // Constant value
+            }
+            // Ensure the last point is included if step doesn't divide evenly
+            if (labels[labels.length - 1] < maxN) {
+                labels.push(maxN);
+                dataPoints.push(1);
+            }
+
+
+            const isDarkMode = document.body.getAttribute('data-theme') === 'dark';
+            const gridColor = isDarkMode ? 'rgba(100, 116, 139, 0.2)' : 'rgba(203, 213, 225, 0.5)';
+            const labelColor = isDarkMode ? '#cbd5e1' : '#475569';
+            // Use a different color for space complexity, e.g., green
+            const pointColor = isDarkMode ? '#34d399' : '#10b981'; // Green
+            const bgColor = isDarkMode ? 'rgba(52, 211, 153, 0.1)' : 'rgba(16, 185, 129, 0.1)';
+
+
+            mySpaceComplexityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Space Units (Approx. 1)',
+                        data: dataPoints,
+                        borderColor: pointColor,
+                        backgroundColor: bgColor,
+                        tension: 0, // Straight line for O(1)
+                        pointRadius: 3,
+                        pointBackgroundColor: pointColor,
+                        fill: true,
+                        stepped: true // Optional: Makes it look more constant
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `~${ctx.parsed.y} space unit(s) for n=${ctx.parsed.x}`
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Space Complexity Growth (O(1))',
+                            color: labelColor,
+                            font: { size: 14, weight: 'bold', family: 'Inter, sans-serif' },
+                            padding: { top: 0, bottom: 10 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Input Size (n)', color: labelColor, font: { family: 'Inter, sans-serif' } },
+                            grid: { color: gridColor },
+                            ticks: { color: labelColor, font: { family: 'Inter, sans-serif' } }
+                        },
+                        y: {
+                            title: { display: true, text: 'Space Units', color: labelColor, font: { family: 'Inter, sans-serif' } },
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: {
+                                color: labelColor,
+                                font: { family: 'Inter, sans-serif' },
+                                // Set max ticks to show 0 and 1 clearly, maybe a bit more
+                                maxTicksLimit: 3,
+                                stepSize: 1
+                            },
+                            // Set a max value slightly above 1 so the line is visible
+                            max: 2
+                        }
+                    }
+                }
+            });
+            window.mySpaceComplexityChart = mySpaceComplexityChart; // Assign to window if needed for theme updates
+        }
+
+        // Function to update space complexity chart theme (similar to time complexity one)
+        function updateSpaceChartTheme(chart) {
+            if (!chart) return;
+            const isDarkMode = document.body.getAttribute('data-theme') === 'dark';
+            const gridColor = isDarkMode ? 'rgba(100, 116, 139, 0.2)' : 'rgba(203, 213, 225, 0.5)';
+            const labelColor = isDarkMode ? '#cbd5e1' : '#475569';
+            // Use the same green colors as defined in createSpaceComplexityChart
+            const pointColor = isDarkMode ? '#34d399' : '#10b981';
+            const bgColor = isDarkMode ? 'rgba(52, 211, 153, 0.1)' : 'rgba(16, 185, 129, 0.1)';
+
+            // Update colors
+            chart.options.plugins.title.color = labelColor;
+            chart.options.scales.x.title.color = labelColor;
+            chart.options.scales.x.grid.color = gridColor;
+            chart.options.scales.x.ticks.color = labelColor;
+            chart.options.scales.y.title.color = labelColor;
+            chart.options.scales.y.grid.color = gridColor;
+            chart.options.scales.y.ticks.color = labelColor;
+            chart.data.datasets[0].borderColor = pointColor;
+            chart.data.datasets[0].pointBackgroundColor = pointColor;
+            chart.data.datasets[0].backgroundColor = bgColor;
+
+            chart.update();
+        }
+
+        // --- Code Snippet Tab Switching and Copy ---
+        // (Included from previous response)
+        function setupCodeSnippets() {
+            const tabs = document.querySelectorAll('.code-tab');
+            const snippets = document.querySelectorAll('.code-snippet');
+            const copyBtn = document.getElementById('copyCodeBtn');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const lang = tab.getAttribute('data-lang');
+
+                    // Deactivate all tabs and snippets
+                    tabs.forEach(t => t.classList.remove('active'));
+                    snippets.forEach(s => s.classList.remove('active'));
+
+                    // Activate the clicked tab and corresponding snippet
+                    tab.classList.add('active');
+                    const activeSnippet = document.getElementById(`code-snippet-${lang}`);
+                    if (activeSnippet) {
+                        activeSnippet.classList.add('active');
+                    }
+                });
+            });
+
+            if (copyBtn) {
+                copyBtn.addEventListener('click', () => {
+                    const activeSnippet = document.querySelector('.code-snippet.active code');
+                    if (activeSnippet) {
+                        navigator.clipboard.writeText(activeSnippet.textContent)
+                            .then(() => {
+                                // Optional: Show temporary success message
+                                const originalIcon = copyBtn.innerHTML;
+                                copyBtn.innerHTML = '<i class="fas fa-check text-green-500"></i>';
+                                copyBtn.title = "Copied!";
+                                setTimeout(() => {
+                                    copyBtn.innerHTML = originalIcon;
+                                    copyBtn.title = "Copy Code";
+                                }, 1500);
+                            })
+                            .catch(err => {
+                                console.error('Failed to copy code: ', err);
+                                alert('Failed to copy code.'); // Fallback alert
+                            });
+                    }
+                });
+            }
+        }
+        // --- End Code Snippet ---
+
+        // --- Initialize Page Content (Wrap existing DOMContentLoaded logic) ---
+        function initializePageContent() {
+            console.log("Initializing Bubble Sort Visualization page content...");
+
+            const themeManager = new ThemeManager(); // Theme manager initialized here
+            progressSentForThisView = false;
+            createLiveArrayVisualization();
+            renderVariableState(null); renderStepDesc(null); resultSpan.textContent = ""; highlightCodeLines([]);
+            renderComplexities(); updateButtonState();
+
+            createComplexityChart(); // Create time complexity chart
+            createSpaceComplexityChart(); // Create space complexity chart
+            setupCodeSnippets(); // Setup code tabs and copy button
+
+            // Setup Event Listeners (move listeners inside this function)
+            arrayInput.addEventListener("input", () => {
+                if (isPlaying || startTime || currentStep > 0) {
+                    if (isPlaying) pauseAutoplay();
+                    stopTimer(); elapsedTime = 0; progressSentForThisView = false;
+                    steps = []; detailedSteps = []; compactSteps = []; currentStep = 0;
+                    highlightCodeLines([]); renderVariableState(null); renderStepDesc(null);
+                    renderResult(null); updateButtonState();
+                }
+                createLiveArrayVisualization();
+            });
+
+            startBtn.onclick = () => { progressSentForThisView = false; startVisualization(); };
+            pausePlayBtn.onclick = () => { if (!steps || steps.length === 0) return; if (isPlaying) pauseAutoplay(); else { const isAtEnd = currentStep >= steps.length - 1 || (steps[currentStep] && steps[currentStep].done); if (!startTime && !isAtEnd) startTimer(); autoplayDelay = calcAutoplayDelay(parseInt(speedSlider.value, 10)); startAutoplay(); } };
+            nextBtn.onclick = () => { const isAtEnd = !steps || steps.length === 0 || currentStep >= steps.length - 1 || (steps[currentStep] && steps[currentStep].done); if (isSwapping || isPlaying || isAtEnd) return; if (!startTime && currentStep === 0) startTimer(); if (stepMode === "compact") { const newStepIndex = findCorrespondingStep(compactSteps, detailedSteps, currentStep); stepMode = "detailed"; steps = detailedSteps; currentStep = newStepIndex; renderCurrentStep(true); return; } currentStep++; renderCurrentStep(true); };
+            prevBtn.onclick = () => { if (isSwapping || isPlaying || currentStep <= 0) return; if (stepMode === "compact") { const newStepIndex = findCorrespondingStep(compactSteps, detailedSteps, currentStep); stepMode = "detailed"; steps = detailedSteps; currentStep = newStepIndex; } if (currentStep > 0) currentStep--; renderCurrentStep(true); };
+
+            speedSlider.oninput = () => {
+                autoplayDelay = calcAutoplayDelay(parseInt(speedSlider.value, 10));
+                speedValue.textContent = `${speedSlider.value}`;
+                if (isPlaying && autoplayTimer) {
+                    clearTimeout(autoplayTimer);
+                    autoplayTimer = setTimeout(() => { if (!isPlaying) return; autoplayNext(); }, autoplayDelay);
+                }
+            };
+
+            arrayInput.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); progressSentForThisView = false; startVisualization(); } });
+
+            const arrayContainer = document.querySelector('.array-container');
+            if (arrayContainer) {
+                arrayContainer.addEventListener('scroll', handleArrayLayout);
+            }
+
+            const logoutButton = document.getElementById('logout-btn');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', handleLogout);
+            } else {
+                console.error("Logout button not found!");
+            }
+
+            const quizButton = document.getElementById('quiz-button');
+            if (quizButton) {
+                quizButton.addEventListener('click', quiz_btn); // Assuming quiz_btn function exists
+            }
+
+
+            // Ripple effect (assuming it's safe to run multiple times, or move it inside too)
+            document.querySelectorAll('button').forEach(button => {
+                button.addEventListener('click', function (e) { if (this.disabled) return; const ripple = document.createElement('span'); const rect = this.getBoundingClientRect(); const size = Math.max(rect.width, rect.height) * 1.5; const x = e.clientX - rect.left - size / 2; const y = e.clientY - rect.top - size / 2; ripple.style.width = ripple.style.height = size + 'px'; ripple.style.left = x + 'px'; ripple.style.top = y + 'px'; ripple.classList.add('ripple'); this.appendChild(ripple); setTimeout(() => { if (ripple.parentNode) ripple.remove(); }, 600); });
+            });
+
+            // Initial check for scrollbars
+            handleArrayLayout();
+
+            // Send data on visibility change or unload (move these inside as well)
+            document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { stopTimer(); if (!progressSentForThisView && elapsedTime >= 5) { if (navigator.sendBeacon) sendVisualizationProgressBeacon(); else sendVisualizationProgressUpdate(); } } });
+            window.addEventListener('pagehide', (event) => { if (!event.persisted) { stopTimer(); if (!progressSentForThisView && elapsedTime >= 5) { if (navigator.sendBeacon) sendVisualizationProgressBeacon(); } } });
+
+            console.log("Bubble Sort Visualization page fully initialized after access check.");
+        }
+
+        // --- Navigation to Practice Quiz ---
+        function quiz_btn() {
+            console.log("Navigating to practice quiz...");
+            stopTimer();
+            if (!progressSentForThisView && elapsedTime >= 5) {
+                if (navigator.sendBeacon) sendVisualizationProgressBeacon();
+                else sendVisualizationProgressUpdate();
+            }
+            window.location.href = "bubbleLogic.html";
+        }
+
+
+        // --- Progress Update Logic ---
+        async function sendVisualizationProgressUpdate() {
+            const token = localStorage.getItem('authToken');
+            if (!token || progressSentForThisView) return;
+
+            const timeSpentSeconds = elapsedTime;
+            if (timeSpentSeconds < 5) { elapsedTime = 0; startTime = null; return; }
+
+            const progressData = { category: 'sorting', algorithm: 'bubbleSort', data: { timeSpentViz: timeSpentSeconds, lastAttemptViz: new Date() } };
+            console.log('Sending visualization progress update via Fetch:', progressData);
+            progressSentForThisView = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/progress`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(progressData), keepalive: true });
+                if (!response.ok) { let errorMsg = `HTTP error ${response.status}`; try { const result = await response.json(); errorMsg = result.message || errorMsg; } catch (e) { } throw new Error(errorMsg); }
+                const result = await response.json(); console.log('Visualization progress update successful (Fetch):', result);
+                elapsedTime = 0; startTime = null; // Reset only on success
+            } catch (error) { progressSentForThisView = false; console.error('Error sending visualization progress update (Fetch):', error); }
+        }
+
+        function sendVisualizationProgressBeacon() {
+            const token = localStorage.getItem('authToken');
+            if (!token || progressSentForThisView) return false;
+            const timeSpentSeconds = elapsedTime;
+            if (timeSpentSeconds < 5) return false;
+
+            const progressData = { category: 'sorting', algorithm: 'bubbleSort', data: { timeSpentViz: timeSpentSeconds, lastAttemptViz: new Date() } };
+            console.log('Sending visualization progress update via Beacon:', progressData);
+            progressSentForThisView = true;
+            const blob = new Blob([JSON.stringify(progressData)], { type: 'application/json' });
+            const beaconURL = `${API_BASE_URL}/auth/progress?authToken=${encodeURIComponent(token)}`; // Consider security implications
+
+            try {
+                const success = navigator.sendBeacon(beaconURL, blob);
+                if (success) { elapsedTime = 0; startTime = null; return true; }
+                else { progressSentForThisView = false; return false; }
+            } catch (error) { progressSentForThisView = false; console.error('Error calling navigator.sendBeacon:', error); return false; }
+        }
+
+        // Send data on visibility change or unload
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { stopTimer(); if (!progressSentForThisView && elapsedTime >= 5) { if (navigator.sendBeacon) sendVisualizationProgressBeacon(); else sendVisualizationProgressUpdate(); } } });
+
+        window.addEventListener('pagehide', (event) => { if (!event.persisted) { stopTimer(); if (!progressSentForThisView && elapsedTime >= 5) { if (navigator.sendBeacon) sendVisualizationProgressBeacon(); } } });
+
+    </script>
+</body>
+
+
+</html>
