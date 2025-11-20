@@ -174,56 +174,6 @@
             border-color: #93c5fd;
         }
 
-        .otp-input {
-            width: 2.5rem; /* 40px */
-            height: 2.5rem; /* 40px */
-            text-align: center;
-            font-size: 1.25rem; /* 20px */
-            font-weight: bold;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            margin: 0; /* Use space-x utility on parent */
-            transition: all 0.3s ease;
-        }
-        
-        @media (min-width: 640px) { /* sm breakpoint */
-            .otp-input {
-                width: 3rem; /* 48px */
-                height: 3rem; /* 48px */
-                font-size: 1.5rem; /* 24px */
-            }
-        }
-
-
-        .otp-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-            transform: scale(1.05);
-        }
-
-        .dark .otp-input {
-            background-color: #374151;
-            border-color: #4b5563;
-            color: white;
-        }
-
-        .dark .otp-input:focus {
-            border-color: #93c5fd;
-            box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.2);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #2563eb, #1e40af);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-        }
-
         .loading-spinner {
             display: inline-block;
             width: 20px;
@@ -246,6 +196,17 @@
 
         .hidden {
             display: none !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
         }
     </style>
 </head>
@@ -443,73 +404,14 @@
                     </div>
                 </div>
 
-                <div id="otpModal" class="glass-effect p-6 sm:p-8 rounded-2xl animate-fade-in-up hidden">
-                    <div class="text-center mb-8">
-                        <div
-                            class="mx-auto h-20 w-20 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-envelope-open-text text-3xl text-blue-600 dark:text-blue-400"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Verify Your Email</h3>
-                        <p class="text-gray-600 dark:text-gray-300 mb-2">
-                            We've sent a 6-digit code to
-                        </p>
-                        <p class="font-semibold text-blue-600 dark:text-blue-400" id="otpEmailDisplay"></p>
-                    </div>
-
-                    <form id="otpFormSubmit" class="space-y-6">
-                        <div>
-                            <label
-                                class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 text-center">Enter
-                                verification code</label>
-                            <div class="flex justify-center space-x-1 sm:space-x-2">
-                                <input type="text" maxlength="1" class="otp-input" data-index="0">
-                                <input type="text" maxlength="1" class="otp-input" data-index="1">
-                                <input type="text" maxlength="1" class="otp-input" data-index="2">
-                                <input type="text" maxlength="1" class="otp-input" data-index="3">
-                                <input type="text" maxlength="1" class="otp-input" data-index="4">
-                                <input type="text" maxlength="1" class="otp-input" data-index="5">
-                            </div>
-                        </div>
-
-                        <div id="otpError"
-                            class="hidden bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-center">
-                        </div>
-
-                        <button type="submit" id="otpSubmit"
-                            class="btn-primary w-full text-white py-3 rounded-xl font-semibold text-lg">
-                            <span id="otpButtonText">
-                                <i class="fas fa-check-circle mr-2"></i>Verify Email
-                            </span>
-                            <span id="otpButtonSpinner" class="hidden">
-                                <div class="loading-spinner inline-block mr-2"></div>
-                                Verifying...
-                            </span>
-                        </button>
-                    </form>
-
-                    <div class="mt-6 text-center">
-                        <p class="text-gray-600 dark:text-gray-400 mb-3">Didn't receive the code?</p>
-                        <button id="resendOtp"
-                            class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold transition-colors duration-300">
-                            <span id="resendOtpText">
-                                <i class="fas fa-redo mr-2"></i>Resend Code
-                            </span>
-                            <span id="resendOtpSpinner" class="hidden">
-                                <div class="loading-spinner inline-block mr-2"></div>
-                                Sending...
-                            </span>
-                        </button>
-                    </div>
-                </div>
-
                 <div id="successMessage" class="glass-effect p-6 sm:p-8 rounded-2xl animate-fade-in-up hidden text-center">
                     <div
                         class="mx-auto h-20 w-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-6">
                         <i class="fas fa-check-circle text-3xl text-green-600 dark:text-green-400"></i>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">Welcome to LearnStackIndia!</h3>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">Success!</h3>
                     <p class="text-gray-600 dark:text-gray-300 mb-6">
-                        Your account has been verified successfully. Redirecting to the main application...
+                        Login successful! Redirecting to Dashboard...
                     </p>
                     <div class="loading-spinner mx-auto"></div>
                 </div>
@@ -522,7 +424,7 @@
                         </div>
                         <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Reset Password</h3>
                         <p class="text-gray-600 dark:text-gray-300">
-                            Enter your email address to reset your password
+                            Enter your email address to receive a password reset link
                         </p>
                     </div>
 
@@ -547,7 +449,7 @@
                         <button type="submit" id="forgotPasswordSubmit"
                             class="btn-primary w-full text-white py-3 rounded-xl font-semibold text-lg">
                             <span id="forgotPasswordButtonText">
-                                <i class="fas fa-paper-plane mr-2"></i>Send Reset Code
+                                <i class="fas fa-paper-plane mr-2"></i>Send Reset Link
                             </span>
                             <span id="forgotPasswordButtonSpinner" class="hidden">
                                 <div class="loading-spinner inline-block mr-2"></div>
@@ -565,110 +467,34 @@
                     </div>
                 </div>
 
-                <div id="passwordResetOtpModal" class="glass-effect p-6 sm:p-8 rounded-2xl animate-fade-in-up hidden">
-                    <div class="text-center mb-8">
-                        <div
-                            class="mx-auto h-20 w-20 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-shield-alt text-3xl text-red-600 dark:text-red-400"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Enter Reset Code</h3>
-                        <p class="text-gray-600 dark:text-gray-300 mb-2">
-                            We've sent a 6-digit code to
-                        </p>
-                        <p class="font-semibold text-red-600 dark:text-red-400" id="resetOtpEmailDisplay"></p>
-                    </div>
-
-                    <form id="passwordResetOtpFormSubmit" class="space-y-6">
-                        <div>
-                            <label
-                                class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 text-center">Enter
-                                reset code</label>
-                            <div class="flex justify-center space-x-1 sm:space-x-2">
-                                <input type="text" maxlength="1" class="otp-input reset-otp-input" data-index="0">
-                                <input type="text" maxlength="1" class="otp-input reset-otp-input" data-index="1">
-                                <input type="text" maxlength="1" class="otp-input reset-otp-input" data-index="2">
-                                <input type="text" maxlength="1" class="otp-input reset-otp-input" data-index="3">
-                                <input type="text" maxlength="1" class="otp-input reset-otp-input" data-index="4">
-                                <input type="text" maxlength="1" class="otp-input reset-otp-input" data-index="5">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label for="newPassword"
-                                class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                <i class="fas fa-lock mr-2"></i>New Password
-                            </label>
-                            <input type="password" id="newPassword" name="newPassword" required
-                                class="input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                placeholder="Enter new password (min 6 characters)">
-                        </div>
-
-                        <div>
-                            <label for="confirmNewPassword"
-                                class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                <i class="fas fa-lock mr-2"></i>Confirm New Password
-                            </label>
-                            <input type="password" id="confirmNewPassword" name="confirmNewPassword" required
-                                class="input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                placeholder="Confirm your new password">
-                        </div>
-
-                        <div id="passwordResetOtpError"
-                            class="hidden bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-center">
-                        </div>
-
-                        <button type="submit" id="passwordResetOtpSubmit"
-                            class="btn-primary w-full text-white py-3 rounded-xl font-semibold text-lg">
-                            <span id="passwordResetOtpButtonText">
-                                <i class="fas fa-check-circle mr-2"></i>Reset Password
-                            </span>
-                            <span id="passwordResetOtpButtonSpinner" class="hidden">
-                                <div class="loading-spinner inline-block mr-2"></div>
-                                Resetting...
-                            </span>
-                        </button>
-                    </form>
-
-                    <div class="mt-6 text-center">
-                        <p class="text-gray-600 dark:text-gray-400 mb-3">Didn't receive the code?</p>
-                        <button id="resendResetOtp"
-                            class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-semibold transition-colors duration-300">
-                            <span id="resendResetOtpText">
-                                <i class="fas fa-redo mr-2"></i>Resend Code
-                            </span>
-                            <span id="resendResetOtpSpinner" class="hidden">
-                                <div class="loading-spinner inline-block mr-2"></div>
-                                Sending...
-                            </span>
-                        </button>
-                    </div>
                 </div>
-
-                <div id="passwordResetSuccess"
-                    class="glass-effect p-6 sm:p-8 rounded-2xl animate-fade-in-up hidden text-center">
-                    <div
-                        class="mx-auto h-20 w-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-6">
-                        <i class="fas fa-check-circle text-3xl text-green-600 dark:text-green-400"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">Password Reset Successfully!</h3>
-                    <p class="text-gray-600 dark:text-gray-300 mb-6">
-                        Your password has been changed. You can now login with your new password.
-                    </p>
-                    <button id="goToLoginFromSuccess" class="btn-primary px-8 py-3 rounded-xl font-semibold text-lg">
-                        <i class="fas fa-sign-in-alt mr-2"></i>
-                        Go to Login
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
     <script>
-        // Application state
-        let currentUserEmail = '';
+        // --- FIREBASE CONFIGURATION (REPLACE THIS) ---
+        const firebaseConfig = {
+  apiKey: "AIzaSyBzc1YD81SItypZyNnfUDrgg5KAbOt6EBk",
+  authDomain: "learnstackindia-8ebf2.firebaseapp.com",
+  projectId: "learnstackindia-8ebf2",
+  storageBucket: "learnstackindia-8ebf2.firebasestorage.app",
+  messagingSenderId: "503794456350",
+  appId: "1:503794456350:web:c62a3149ed3cb1f4781b0f",
+  measurementId: "G-87QMZJR142"
+};
+        // ------------------------------
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = app.auth();
 
         // API Base URL
         const API_BASE_URL = '/api';
+
+        // --- UTILITY FUNCTIONS (Kept for brevity) ---
 
         // Theme Management
         function initializeTheme() {
@@ -677,10 +503,8 @@
             const themeIcon = document.getElementById('themeIcon');
             const mobileThemeIcon = document.getElementById('mobileThemeIcon');
             const html = document.documentElement;
-
             let currentTheme = localStorage.getItem('theme') || 'light';
             applyTheme(currentTheme);
-
             [themeToggle, mobileThemeToggle].forEach(toggle => {
                 if (toggle) {
                     toggle.addEventListener('click', () => {
@@ -690,7 +514,6 @@
                     });
                 }
             });
-
             function applyTheme(theme) {
                 if (theme === 'dark') {
                     html.classList.add('dark');
@@ -706,126 +529,106 @@
             }
         }
 
-        // Form Management
-        // Form Management
         function showForm(formId) {
-            const forms = [
-                'loginForm',
-                'registerForm',
-                'otpModal',
-                'successMessage',
-                'forgotPasswordForm',
-                'passwordResetOtpModal',
-                'passwordResetSuccess'
-            ];
+            const forms = [ 'loginForm', 'registerForm', 'successMessage', 'forgotPasswordForm'];
             forms.forEach(id => {
-                document.getElementById(id).classList.add('hidden');
+                const element = document.getElementById(id);
+                if (element) element.classList.add('hidden');
             });
-            document.getElementById(formId).classList.remove('hidden');
+            const targetElement = document.getElementById(formId);
+            if (targetElement) targetElement.classList.remove('hidden');
         }
 
-        // Error Management
         function showError(elementId, message) {
             const errorElement = document.getElementById(elementId);
-            errorElement.textContent = message;
-            errorElement.classList.remove('hidden');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.remove('hidden');
+            }
         }
 
         function hideError(elementId) {
-            document.getElementById(elementId).classList.add('hidden');
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) errorElement.classList.add('hidden');
         }
 
         function showSuccess(elementId, message) {
             const successElement = document.getElementById(elementId);
-            successElement.textContent = message;
-            successElement.classList.remove('hidden');
+            if (successElement) {
+                successElement.textContent = message;
+                successElement.classList.remove('hidden');
+            }
         }
 
         function hideSuccess(elementId) {
-            document.getElementById(elementId).classList.add('hidden');
+            const successElement = document.getElementById(elementId);
+            if (successElement) successElement.classList.add('hidden');
         }
 
-        // Loading State Management
         function setButtonLoading(buttonId, textElementId, spinnerElementId, isLoading = true) {
             const button = document.getElementById(buttonId);
             const textElement = document.getElementById(textElementId);
             const spinnerElement = document.getElementById(spinnerElementId);
 
+            if (!button) return;
+
             if (isLoading) {
                 button.disabled = true;
-                textElement.classList.add('hidden');
-                spinnerElement.classList.remove('hidden');
+                if (textElement) textElement.classList.add('hidden');
+                if (spinnerElement) spinnerElement.classList.remove('hidden');
             } else {
                 button.disabled = false;
-                textElement.classList.remove('hidden');
-                spinnerElement.classList.add('hidden');
+                if (textElement) textElement.classList.remove('hidden');
+                if (spinnerElement) spinnerElement.classList.add('hidden');
             }
         }
 
-        // OTP Input Management
-        function setupOTPInputs() {
-            const inputs = document.querySelectorAll('.otp-input');
-
-            inputs.forEach((input, index) => {
-                input.addEventListener('input', (e) => {
-                    const value = e.target.value;
-                    if (value && index < inputs.length - 1) {
-                        inputs[index + 1].focus();
-                    }
-                });
-
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                        inputs[index - 1].focus();
-                    }
-                });
-
-                input.addEventListener('paste', (e) => {
-                    e.preventDefault();
-                    const paste = (e.clipboardData || window.clipboardData).getData('text');
-                    const pasteData = paste.slice(0, 6).split('');
-
-                    pasteData.forEach((char, i) => {
-                        if (inputs[i] && /\d/.test(char)) {
-                            inputs[i].value = char;
-                        }
-                    });
-
-                    if (pasteData.length > 0) {
-                        const nextIndex = Math.min(pasteData.length, inputs.length - 1);
-                        inputs[nextIndex].focus();
-                    }
-                });
-            });
+        function getFirebaseErrorMessage(error) {
+            switch (error.code) {
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                    return 'Invalid email or password.';
+                case 'auth/email-already-in-use':
+                    return 'This email is already in use. Try logging in.';
+                case 'auth/weak-password':
+                    return 'Password is too weak, it must be at least 6 characters.';
+                case 'auth/invalid-email':
+                    return 'The email address is not valid.';
+                default:
+                    return error.message || 'An unexpected error occurred. Please try again.';
+            }
         }
 
-        function getOTPValue() {
-            const inputs = document.querySelectorAll('.otp-input');
-            return Array.from(inputs).map(input => input.value).join('');
-        }
+        // --- NEW/MODIFIED API CALLS ---
 
-        function clearOTPInputs() {
-            const inputs = document.querySelectorAll('.otp-input');
-            inputs.forEach(input => input.value = '');
-            inputs[0].focus();
-        }
+        // Helper to make authenticated calls (needed for profile creation and dashboard check)
+        async function makeAuthenticatedAPICall(endpoint, options = {}) {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error("User not authenticated for API call.");
+            }
 
-        // API Calls
-        // API Calls with timeout
-        async function makeAPICall(endpoint, options = {}) {
+            let token;
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                // Get the Firebase ID Token
+                token = await user.getIdToken();
+            } catch (error) {
+                throw new Error("Failed to get authentication token.");
+            }
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); 
 
+            try {
                 const response = await fetch(`${API_BASE_URL}${endpoint}`, {
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`, // Send the ID Token
                         ...options.headers
                     },
                     signal: controller.signal,
                     ...options
                 });
-
                 clearTimeout(timeoutId);
 
                 const data = await response.json();
@@ -837,302 +640,117 @@
                 return data;
             } catch (error) {
                 if (error.name === 'AbortError') {
-                    throw new Error('Request timeout. Please check your connection and try again.');
+                    throw new Error('Request timeout. Please try again.');
                 }
-                console.error('API call error:', error);
+                // Important: Do not redirect here, let the caller handle it.
                 throw error;
             }
         }
 
-        // Authentication Functions
-        async function handleLogin(email, password) {
+        // --- CRITICAL: Creates the profile document in the backend database ---
+        async function createProfileInDatabase(user, username, email) {
             try {
-                setButtonLoading('loginSubmit', 'loginButtonText', 'loginButtonSpinner', true);
-                hideError('loginError');
-
-                const response = await makeAPICall('/auth/login', {
+                // This uses the authenticated call to verify the token and create the user's document
+                await makeAuthenticatedAPICall('/auth/register-profile', {
                     method: 'POST',
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ username, email })
                 });
-
-                if (response.requiresVerification) {
-                    currentUserEmail = email;
-                    showForm('otpModal');
-                    document.getElementById('otpEmailDisplay').textContent = email;
-                    clearOTPInputs();
-                } else if (response.success && response.token) {
-                    localStorage.setItem('authToken', response.token);
-                    localStorage.setItem('currentUser', JSON.stringify(response.user));
-                    
-                    // --- ADMIN/MENTOR REDIRECT LOGIC ---
-                    if (response.user.role === 'admin') {
-                        console.log("Admin user detected, redirecting to admin dashboard.");
-                        showForm('successMessage'); // Optionally show success before redirect
-                        document.querySelector('#successMessage p').textContent = 'Login successful! Redirecting to Admin Dashboard...';
-                        setTimeout(() => {
-                            window.location.href = 'admin_dashboard.html'; // Redirect to admin page
-                        }, 1500);
-                    } else if (response.user.role === 'mentor') { // <-- ADD THIS BLOCK
-                        console.log("Mentor user detected, redirecting to mentor dashboard.");
-                        showForm('successMessage'); 
-                        document.querySelector('#successMessage p').textContent = 'Login successful! Redirecting to Mentor Dashboard...';
-                        setTimeout(() => {
-                            window.location.href = 'mentor_dashboard.html'; // Redirect to mentor page
-                        }, 1500);
-                    } else {
-                        console.log("Regular user detected, redirecting to user dashboard.");
-                        showForm('successMessage');
-                        document.querySelector('#successMessage p').textContent = 'Login successful! Redirecting to Dashboard...';
-                        setTimeout(() => {
-                            window.location.href = 'dashboard.html'; // Redirect to regular user page
-                        }, 1500);
-                    }
-                    // --- END REDIRECT LOGIC ---
-
-                }
-                else {
-                 // Handle cases where login might succeed but not return expected data
-                 throw new Error(response.message || 'Login failed or unexpected response.');
+                return true;
+            } catch (error) {
+                console.error('Backend profile creation failed:', error.message);
+                throw new Error('Account setup failed. Please contact support if the issue persists.');
             }
+        }
+
+
+        // --- MODIFIED AUTHENTICATION FUNCTIONS ---
+
+        async function handleLogin(email, password) {
+            setButtonLoading('loginSubmit', 'loginButtonText', 'loginButtonSpinner', true);
+            hideError('loginError');
+
+            try {
+                // 1. Firebase Auth Sign-in
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                // 2. Fetch user role/data from the dashboard endpoint (this also verifies profile existence)
+                const response = await makeAuthenticatedAPICall('/auth/dashboard');
+
+                // 3. Extract user data and store it locally
+                const userProfile = response?.user || {};
+                localStorage.setItem('currentUser', JSON.stringify(userProfile));
+
+                let userRole = userProfile.role || 'user';
+                
+                // 4. Redirection Logic
+                let redirectUrl = 'dashboard.html';
+                if (userRole === 'admin') { redirectUrl = 'admin_dashboard.html'; } 
+                else if (userRole === 'mentor') { redirectUrl = 'mentor_dashboard.html'; } 
+                
+                showForm('successMessage');
+                document.querySelector('#successMessage h3').textContent = 'Welcome Back!';
+                document.querySelector('#successMessage p').textContent = `Login successful! Redirecting to ${userRole.toUpperCase()} Dashboard...`;
+                
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 1500);
 
             } catch (error) {
-                showError('loginError', error.message);
+                showError('loginError', getFirebaseErrorMessage(error));
             } finally {
                 setButtonLoading('loginSubmit', 'loginButtonText', 'loginButtonSpinner', false);
             }
         }
+
         async function handleRegister(username, email, password) {
+            setButtonLoading('registerSubmit', 'registerButtonText', 'registerButtonSpinner', true);
+            hideError('registerError');
+
             try {
-                setButtonLoading('registerSubmit', 'registerButtonText', 'registerButtonSpinner', true);
-                hideError('registerError');
+                // 1. Firebase Auth Sign-up
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                // 2. Update Firebase user profile
+                await user.updateProfile({ displayName: username });
 
-                const response = await makeAPICall('/auth/register', {
-                    method: 'POST',
-                    body: JSON.stringify({ username, email, password })
-                });
+                // 3. CRITICAL: Create the profile document in the backend database
+                await createProfileInDatabase(user, username, email);
 
-                if (response.requiresVerification) {
-                    currentUserEmail = email;
-                    showForm('otpModal');
-                    document.getElementById('otpEmailDisplay').textContent = email;
-                    clearOTPInputs();
-                }
+                // 4. Redirect to login with success message
+                showForm('loginForm');
+                showSuccess('loginError', `Account created for ${email}. Please sign in now.`); // Show success in the login error block
 
             } catch (error) {
-                showError('registerError', error.message);
+                showError('registerError', getFirebaseErrorMessage(error));
             } finally {
                 setButtonLoading('registerSubmit', 'registerButtonText', 'registerButtonSpinner', false);
             }
         }
 
-        async function handleOTPVerification(email, otp) {
-            try {
-                setButtonLoading('otpSubmit', 'otpButtonText', 'otpButtonSpinner', true);
-                hideError('otpError');
-
-                const response = await makeAPICall('/auth/verify-otp', {
-                    method: 'POST',
-                    body: JSON.stringify({ email, otp })
-                });
-
-                if (response.success && response.token) {
-                    localStorage.setItem('authToken', response.token);
-                    localStorage.setItem('currentUser', JSON.stringify(response.user));
-
-                    showForm('successMessage');
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 2000);
-                }
-
-            } catch (error) {
-                showError('otpError', error.message);
-                clearOTPInputs();
-            } finally {
-                setButtonLoading('otpSubmit', 'otpButtonText', 'otpButtonSpinner', false);
-            }
-        }
-
-        async function handleResendOTP(email) {
-            try {
-                setButtonLoading('resendOtp', 'resendOtpText', 'resendOtpSpinner', true);
-                hideError('otpError');
-
-                await makeAPICall('/auth/resend-otp', {
-                    method: 'POST',
-                    body: JSON.stringify({ email })
-                });
-
-                clearOTPInputs();
-                alert('New verification code sent to your email!');
-
-            } catch (error) {
-                showError('otpError', error.message);
-            } finally {
-                setButtonLoading('resendOtp', 'resendOtpText', 'resendOtpSpinner', false);
-            }
-        }
-
         async function handleForgotPassword(email) {
+            setButtonLoading('forgotPasswordSubmit', 'forgotPasswordButtonText', 'forgotPasswordButtonSpinner', true);
+            hideError('forgotPasswordError');
+            hideSuccess('forgotPasswordSuccess');
+
             try {
-                setButtonLoading('forgotPasswordSubmit', 'forgotPasswordButtonText', 'forgotPasswordButtonSpinner', true);
-                hideError('forgotPasswordError');
-                hideSuccess('forgotPasswordSuccess');
+                await auth.sendPasswordResetEmail(email);
 
-                const response = await makeAPICall('/auth/forgot-password', {
-                    method: 'POST',
-                    body: JSON.stringify({ email })
-                });
-
-                if (response.success) {
-                    showSuccess('forgotPasswordSuccess', response.message || 'Reset code sent to your email!');
-                    setTimeout(() => {
-                        showForm('loginForm');
-                    }, 3000);
-                }
-
-            } catch (error) {
-                showError('forgotPasswordError', error.message);
-            } finally {
-                setButtonLoading('forgotPasswordSubmit', 'forgotPasswordButtonText', 'forgotPasswordButtonSpinner', false);
-            }
-        }
-
-        // Store reset email
-        let resetPasswordEmail = '';
-
-        // Setup Reset OTP Inputs
-        function setupResetOTPInputs() {
-            const inputs = document.querySelectorAll('.reset-otp-input');
-
-            inputs.forEach((input, index) => {
-                input.addEventListener('input', (e) => {
-                    const value = e.target.value;
-                    if (value && index < inputs.length - 1) {
-                        inputs[index + 1].focus();
-                    }
-                });
-
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                        inputs[index - 1].focus();
-                    }
-                });
-
-                input.addEventListener('paste', (e) => {
-                    e.preventDefault();
-                    const paste = (e.clipboardData || window.clipboardData).getData('text');
-                    const pasteData = paste.slice(0, 6).split('');
-
-                    pasteData.forEach((char, i) => {
-                        if (inputs[i] && /\d/.test(char)) {
-                            inputs[i].value = char;
-                        }
-                    });
-
-                    if (pasteData.length > 0) {
-                        const nextIndex = Math.min(pasteData.length, inputs.length - 1);
-                        inputs[nextIndex].focus();
-                    }
-                });
-            });
-        }
-
-        function getResetOTPValue() {
-            const inputs = document.querySelectorAll('.reset-otp-input');
-            return Array.from(inputs).map(input => input.value).join('');
-        }
-
-        function clearResetOTPInputs() {
-            const inputs = document.querySelectorAll('.reset-otp-input');
-            inputs.forEach(input => input.value = '');
-            inputs[0].focus();
-        }
-
-        // Updated forgot password handler
-        async function handleForgotPassword(email) {
-            try {
-                setButtonLoading('forgotPasswordSubmit', 'forgotPasswordButtonText', 'forgotPasswordButtonSpinner', true);
-                hideError('forgotPasswordError');
-                hideSuccess('forgotPasswordSuccess');
-
-                const response = await makeAPICall('/auth/forgot-password', {
-                    method: 'POST',
-                    body: JSON.stringify({ email })
-                });
-
-                if (response.success) {
-                    resetPasswordEmail = email;
-                    showForm('passwordResetOtpModal');
-                    document.getElementById('resetOtpEmailDisplay').textContent = email;
-                    clearResetOTPInputs();
-                    setupResetOTPInputs();
-                }
-
-            } catch (error) {
-                showError('forgotPasswordError', error.message);
-            } finally {
-                setButtonLoading('forgotPasswordSubmit', 'forgotPasswordButtonText', 'forgotPasswordButtonSpinner', false);
-            }
-        }
-
-        // Handle password reset with OTP
-        async function handlePasswordReset(email, otp, newPassword) {
-            try {
-                setButtonLoading('passwordResetOtpSubmit', 'passwordResetOtpButtonText', 'passwordResetOtpButtonSpinner', true);
-                hideError('passwordResetOtpError');
-
-                const response = await makeAPICall('/auth/reset-password', {
-                    method: 'POST',
-                    body: JSON.stringify({ email, otp, newPassword })
-                });
-
-                if (response.success) {
-                    showForm('passwordResetSuccess');
-                    resetPasswordEmail = '';
-                }
-
-            } catch (error) {
-                showError('passwordResetOtpError', error.message);
-                clearResetOTPInputs();
-            } finally {
-                setButtonLoading('passwordResetOtpSubmit', 'passwordResetOtpButtonText', 'passwordResetOtpButtonSpinner', false);
-            }
-        }
-
-        // Resend reset OTP
-        // frontend/auth.html
-
-        // Resend reset OTP
-        async function handleResendResetOTP(email) {
-            try {
-                setButtonLoading('resendResetOtp', 'resendResetOtpText', 'resendResetOtpSpinner', true);
-                hideError('passwordResetOtpError');
-
-                // 1. Capture the response from the API call
-                const response = await makeAPICall('/auth/forgot-password', {
-                    method: 'POST',
-                    body: JSON.stringify({ email })
-                });
-
-                clearResetOTPInputs();
+                showSuccess('forgotPasswordSuccess', `Password reset link sent to ${email}. Check your inbox (and spam folder).`);
                 
-                // 2. Use the message from the response in the alert
-                alert(response.message || 'New reset code sent to your email!'); // This now uses the backend message
-
             } catch (error) {
-                showError('passwordResetOtpError', error.message);
+                showError('forgotPasswordError', getFirebaseErrorMessage(error));
             } finally {
-                setButtonLoading('resendResetOtp', 'resendResetOtpText', 'resendResetOtpSpinner', false);
+                setButtonLoading('forgotPasswordSubmit', 'forgotPasswordButtonText', 'forgotPasswordButtonSpinner', false);
             }
         }
+
+        // --- END AUTHENTICATION FUNCTIONS ---
+
 
         window.addEventListener('pageshow', function(event) {
-            const token = localStorage.getItem('authToken');
-            if (token) {
-                // User is logged in, redirect them away from auth page
-                window.location.href = 'dashboard.html'; 
-            }
+            // No need for custom local storage check, rely on Firebase listener
         });
         
         // Event Listeners
@@ -1140,21 +758,22 @@
             // Initialize theme
             initializeTheme();
 
-            // Setup OTP inputs
-            setupOTPInputs();
-            setupResetOTPInputs(); // Add this line
-
-            // Check if already authenticated
-            const token = localStorage.getItem('authToken');
-            if (token) {
-                window.location.href = 'dashboard.html';
-                return;
-            }
-
+            // Check if already authenticated via Firebase listener
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    // User is signed in, redirect them away from auth page
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+                // If not authenticated, ensure the login form is shown
+                showForm('loginForm');
+            });
+            
             // Form switch buttons
             document.getElementById('switchToRegister').addEventListener('click', () => {
                 showForm('registerForm');
                 hideError('loginError');
+                hideSuccess('loginError');
             });
 
             document.getElementById('switchToLogin').addEventListener('click', () => {
@@ -1214,24 +833,6 @@
                 await handleRegister(username, email, password);
             });
 
-            // OTP verification form
-            document.getElementById('otpFormSubmit').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const otp = getOTPValue();
-
-                if (otp.length !== 6) {
-                    showError('otpError', 'Please enter the complete 6-digit code');
-                    return;
-                }
-
-                await handleOTPVerification(currentUserEmail, otp);
-            });
-
-            // Resend OTP
-            document.getElementById('resendOtp').addEventListener('click', async () => {
-                await handleResendOTP(currentUserEmail);
-            });
-
             // Forgot password form
             document.getElementById('forgotPasswordFormSubmit').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -1244,66 +845,9 @@
                 }
 
                 await handleForgotPassword(email);
-            });
-
-            // Forgot password form
-            document.getElementById('forgotPasswordFormSubmit').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                const email = formData.get('email');
-
-                if (!email) {
-                    showError('forgotPasswordError', 'Please enter your email address');
-                    return;
-                }
-
-                await handleForgotPassword(email);
-            });
-
-            // Password reset OTP form
-            document.getElementById('passwordResetOtpFormSubmit').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const otp = getResetOTPValue();
-                const newPassword = document.getElementById('newPassword').value;
-                const confirmPassword = document.getElementById('confirmNewPassword').value;
-
-                if (otp.length !== 6) {
-                    showError('passwordResetOtpError', 'Please enter the complete 6-digit code');
-                    return;
-                }
-
-                if (!newPassword || newPassword.length < 6) {
-                    showError('passwordResetOtpError', 'Password must be at least 6 characters long');
-                    return;
-                }
-
-                if (newPassword !== confirmPassword) {
-                    showError('passwordResetOtpError', 'Passwords do not match');
-                    return;
-                }
-
-                await handlePasswordReset(resetPasswordEmail, otp, newPassword);
-            });
-
-            // Resend reset OTP
-            document.getElementById('resendResetOtp').addEventListener('click', async () => {
-                await handleResendResetOTP(resetPasswordEmail);
-            });
-
-            // Go to login from success
-            document.getElementById('goToLoginFromSuccess').addEventListener('click', () => {
-                showForm('loginForm');
-                // Clear the form
-                document.getElementById('loginFormSubmit').reset();
             });
         });
     </script>
 </body>
 
 </html>
-
-
-
-
-
-
