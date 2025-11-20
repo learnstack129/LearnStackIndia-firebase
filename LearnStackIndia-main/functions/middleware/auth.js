@@ -1,29 +1,38 @@
 // functions/middleware/auth.js
 
-const jwt = require('jsonwebtoken');
-const UserService = require('../models/User'); // <-- CHANGED TO UserService
+const admin = require('firebase-admin'); // 👈 NEW: Import Firebase Admin SDK
+const UserService = require('../models/User'); // Assume UserService handles Firestore/MongoDB lookup
 
 module.exports = async (req, res, next) => {
   try {
-    // Get token from header
+    // 1. Get the Firebase ID token from the Authorization header
     const token = req.header('Authorization')?.replace('Bearer ', '');
 
     if (!token) {
-      return res.status(401).json({ message: 'No token, authorization denied' });
+      return res.status(401).json({ message: 'No authentication token provided. Authorization denied.' });
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // 2. Verify the token using Firebase Admin SDK
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const uid = decodedToken.uid; // This is the unique Firebase User ID
 
-    // Get user from token (Mongoose lookup -> UserService)
-    const user = await UserService.findById(decoded.id);
+    // 3. Look up the user document in our database using the UID
+    const user = await UserService.findById(uid);
+    
     if (!user) {
-      return res.status(401).json({ message: 'Token is not valid' });
+      // User is authenticated by Firebase Auth, but the profile document is missing in the database.
+      // 404/403 ensures the frontend's makeAuthenticatedAPICall redirects the user.
+      return res.status(404).json({ 
+          message: 'User profile not found in database. Please ensure you have completed registration.' 
+      });
     }
 
-    req.user = { id: user.id }; // Use user.id (string) instead of user._id (ObjectId)
+    // 4. Attach the user's ID to the request object
+    req.user = { id: user.id }; 
     next();
   } catch (error) {
-    res.status(401).json({ message: 'Token is not valid' });
+    console.error('Firebase Token Verification Error:', error);
+    // If Firebase Admin SDK rejects the token (expired, invalid format, etc.)
+    res.status(401).json({ message: 'Invalid or expired authentication token.' });
   }
 };
