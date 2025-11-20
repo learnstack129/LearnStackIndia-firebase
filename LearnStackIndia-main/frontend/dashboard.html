@@ -850,27 +850,22 @@
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script>
-        // --- FIREBASE CONFIGURATION ---
-        // !!! IMPORTANT: REPLACE WITH YOUR ACTUAL FIREBASE CONFIGURATION !!!
+        // --- FIREBASE CONFIGURATION (REPLACE THIS) ---
         const firebaseConfig = {
-            apiKey: "AIzaSyBzc1YD81SItypZyNnfUDrgg5KAbOt6EBk",
-            authDomain: "learnstackindia-8ebf2.firebaseapp.com",
-            projectId: "learnstackindia-8ebf2",
-            storageBucket: "learnstackindia-8ebf2.firebasestorage.app",
-            messagingSenderId: "503794456350",
-            appId: "1:503794456350:web:c62a3149ed3cb1f4781b0f",
-            measurementId: "G-87QMZJR142"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
         // ------------------------------
 
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const auth = app.auth();
-        const db = app.firestore();
-        // End Firebase setup
 
         // Application state
         let currentUser = null;
@@ -880,12 +875,11 @@
         // API Configuration
         const API_BASE_URL = '/api';
 
-        // NOTE: getAuthToken is removed, Firebase handles auth state
-
         // API call with authentication
         async function makeAuthenticatedAPICall(endpoint, options = {}) {
             const user = auth.currentUser;
             if (!user) {
+                // If a function calls this without an authenticated user, redirect.
                 redirectToAuth();
                 throw new Error("User not authenticated.");
             }
@@ -895,7 +889,6 @@
                 token = await user.getIdToken();
             } catch (error) {
                 console.error("Error getting ID token:", error);
-                // We rely on auth.onAuthStateChanged to catch this, but hard fail here too.
                 redirectToAuth();
                 throw new Error("Failed to get authentication token.");
             }
@@ -913,10 +906,13 @@
                     ...options
                 });
                 clearTimeout(timeoutId);
-                if (response.status === 401 || response.status === 403) {
+                
+                // CRITICAL: Handle 401/403/404 from backend (redirect to auth)
+                if (response.status === 401 || response.status === 403 || response.status === 404) {
                     redirectToAuth();
-                    throw new Error("Authentication failed (401/403).");
+                    throw new Error("Authentication failed or profile not found.");
                 }
+                
                 const contentType = response.headers.get("content-type");
                 let data;
                 if (contentType && contentType.indexOf("application/json") !== -1) {
@@ -946,16 +942,11 @@
                 redirectToAuth();
                 throw new Error("User not authenticated.");
             }
-
             let token;
-            try {
-                token = await user.getIdToken();
-            } catch (error) {
-                console.error("Error getting ID token for doubt API:", error);
-                redirectToAuth();
-                throw new Error("Failed to get authentication token.");
+            try { token = await user.getIdToken(); } catch (error) { 
+                redirectToAuth(); throw new Error("Failed to get authentication token."); 
             }
-
+            
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -963,16 +954,18 @@
                     signal: controller.signal,
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`, // Use the Firebase ID Token
+                        'Authorization': `Bearer ${token}`,
                         ...options.headers
                     },
                     ...options
                 });
                 clearTimeout(timeoutId);
-                if (response.status === 401 || response.status === 403) {
+
+                if (response.status === 401 || response.status === 403 || response.status === 404) {
                     redirectToAuth();
-                    throw new Error("Authentication failed (401/403).");
+                    throw new Error("Authentication failed or profile not found.");
                 }
+
                 const data = await response.json();
                 if (!response.ok) {
                     throw new Error(data.message || `HTTP error! status: ${response.status}`);
@@ -989,7 +982,8 @@
         }
         // --- END NEW HELPER ---
 
-        // Theme Management
+
+        // Theme Management (Kept existing code)
         function initializeTheme() {
             const themeToggle = document.getElementById('themeToggle');
             const themeIcon = document.getElementById('themeIcon');
@@ -1015,19 +1009,15 @@
             if (userData) {
                 try {
                     currentUser = JSON.parse(userData);
-                    // Prioritize cached username if it exists
                     name = currentUser.username || user.displayName || user.email;
                 } catch (error) {
-                    // Stale/bad local storage, rely on Firebase user
                     currentUser = { username: user.displayName, email: user.email, uid: user.uid };
                 }
             } else {
-                // No local storage cache, rely on Firebase user info
-                currentUser = { username: user.displayName, email: user.email, uid: user.uid };
+                 currentUser = { username: user.displayName, email: user.email, uid: user.uid };
             }
-
-            // Update UI
-            document.getElementById('welcomeText').textContent = `Welcome, ${name.split('@')[0]}`; // Clean up email display
+            
+            document.getElementById('welcomeText').textContent = `Welcome, ${name.split('@')[0]}`; 
             document.getElementById('userInitial').textContent = name.charAt(0).toUpperCase();
         }
 
@@ -1035,40 +1025,32 @@
         async function loadDashboardData() {
             showSkeletonLoaders();
             try {
-                console.log('🔄 Fetching dashboard data...');
-                // Uses makeAuthenticatedAPICall which gets the Firebase ID token
-                dashboardData = await makeAuthenticatedAPICall('/auth/dashboard');
+                dashboardData = await makeAuthenticatedAPICall('/auth/dashboard'); 
                 if (dashboardData) {
-                    console.log('✅ Dashboard data loaded:', dashboardData);
+                    // Update the local storage with the latest user data (including role)
+                    localStorage.setItem('currentUser', JSON.stringify(dashboardData.user));
                     updateDashboardUI(dashboardData);
                 } else {
                     showEmptyDashboard();
                 }
             } catch (error) {
                 console.error('❌ Critical error loading dashboard:', error);
+                // Redirection already handled in makeAuthenticatedAPICall for 401/403/404
                 showEmptyDashboard();
             }
         }
 
-        // Show loading skeletons
+        // --- All other helper functions (showSkeletonLoaders, updateDashboardUI, createSubjectCard, etc.) remain here ---
         function showSkeletonLoaders() {
-            // Hero Stats
             document.getElementById('totalSubjects').innerHTML = `<span class="loading-skeleton w-8 h-8 rounded inline-block"></span>`;
             document.getElementById('totalTopics').innerHTML = `<span class="loading-skeleton w-8 h-8 rounded inline-block"></span>`;
             document.getElementById('totalAlgorithms').innerHTML = `<span class="loading-skeleton w-8 h-8 rounded inline-block"></span>`;
-
-            // Personal Stats
             document.getElementById('learningProgress').innerHTML = `<span class="loading-skeleton w-12 h-6 rounded inline-block"></span>`;
             document.getElementById('algorithmsCompleted').innerHTML = `<span class="loading-skeleton w-8 h-6 rounded inline-block"></span>`;
             document.getElementById('timeToday').innerHTML = `<span class="loading-skeleton w-12 h-6 rounded inline-block"></span>`;
             document.getElementById('currentRank').innerHTML = `<span class="loading-skeleton w-16 h-6 rounded inline-block"></span>`;
             updateProgressRing(0);
-
-            // Subjects
             showDefaultSubjects();
-
-            // --- ADD THIS ---
-            // Tests
             const testGrid = document.getElementById('testsGrid');
             if (testGrid) {
                 testGrid.innerHTML = `
@@ -1078,30 +1060,25 @@
             }
         }
 
-        // Update UI with real data
         function updateDashboardUI(data) {
             const stats = data?.stats || {};
             const user = data?.user || {};
             const rank = stats.rank || {};
-            const subjectsData = data?.subjects || {}; // Use subjects data
-
-            // Re-run initializeUser to ensure UI is updated with potentially fresher data
-            // NOTE: We pass the loaded user data object instead of the Firebase object
-            const loadedUser = {
-                username: user.username,
-                email: user.email,
-                uid: auth.currentUser.uid
+            const subjectsData = data?.subjects || {};
+            
+            const loadedUser = { 
+                username: user.username, 
+                email: user.email, 
+                uid: auth.currentUser ? auth.currentUser.uid : 'N/A'
             };
             initializeUser(loadedUser);
 
 
-            // Personal Stats
             document.getElementById('learningProgress').textContent = `${stats.overallProgress ?? 0}%`;
             document.getElementById('algorithmsCompleted').textContent = stats.algorithmsCompleted ?? 0;
             document.getElementById('timeToday').textContent = formatTime(stats.timeToday ?? 0);
             document.getElementById('currentRank').textContent = rank.level ?? 'Bronze';
 
-            // Hero Stats
             const totalAlgoCount = stats.totalAlgorithms ?? '?';
             const totalTopicCount = Object.values(subjectsData).reduce((acc, subject) => acc + (subject.topics ? subject.topics.length : 0), 0) || '?';
             const totalSubjectCount = Object.keys(subjectsData).length > 0 ? Object.keys(subjectsData).length : '?';
@@ -1111,34 +1088,24 @@
             document.getElementById('totalAlgorithms').textContent = totalAlgoCount;
 
             updateProgressRing(stats.overallProgress ?? 0);
-
-            // Update subjects grid
             updateSubjectsGrid(subjectsData);
-
-            // --- ADD THIS ---
-            loadActiveTests(); // Fetch and render active tests
+            loadActiveTests();
         }
 
-        // Show empty/default dashboard
         function showEmptyDashboard() {
-            // Hero
             document.getElementById('totalSubjects').textContent = '0';
             document.getElementById('totalTopics').textContent = '0';
             document.getElementById('totalAlgorithms').textContent = '0';
-            // Personal
             document.getElementById('learningProgress').textContent = '0%';
             document.getElementById('algorithmsCompleted').textContent = '0';
             document.getElementById('timeToday').textContent = '0m';
             document.getElementById('currentRank').textContent = 'Bronze';
             updateProgressRing(0);
             showDefaultSubjects();
-
-            // --- ADD THIS ---
             const testGrid = document.getElementById('testsGrid');
             if (testGrid) testGrid.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 col-span-full">No active tests are available.</p>';
         }
 
-        // Format time helper
         function formatTime(minutes) {
             if (minutes === 0 || minutes === undefined || minutes === null) return '0m';
             if (minutes < 60) return `${Math.round(minutes)}m`;
@@ -1147,7 +1114,6 @@
             return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
         }
 
-        // Update progress ring
         function updateProgressRing(percentage) {
             const circle = document.getElementById('progressCircle');
             if (!circle) return;
@@ -1159,8 +1125,6 @@
             setTimeout(() => { circle.style.strokeDashoffset = offset; }, 50);
         }
 
-        // --- LEVEL 1: SUBJECTS ---
-
         function showDefaultSubjects() {
             const grid = document.getElementById('subjectsGrid');
             grid.innerHTML = `<div class="loading-skeleton rounded-xl h-48"></div>`.repeat(4);
@@ -1169,21 +1133,14 @@
         function updateSubjectsGrid(subjects) {
             const grid = document.getElementById('subjectsGrid');
             grid.innerHTML = '';
-
-            // The 'subjects' object is now { "SubjectName": { icon, color, topics: [...] } }
             const subjectNames = Object.keys(subjects);
-
             if (subjectNames.length === 0) {
                 grid.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 col-span-full">No subjects available.</p>';
                 return;
             }
-
-            // Sort subject names alphabetically
             subjectNames.sort();
-
             subjectNames.forEach(subjectName => {
-                const subjectData = subjects[subjectName]; // This is { icon, color, topics }
-                // Pass the whole subjectData object to the card creator
+                const subjectData = subjects[subjectName];
                 const card = createSubjectCard(subjectName, subjectData);
                 grid.appendChild(card);
             });
@@ -1191,14 +1148,9 @@
 
         function createSubjectCard(subjectName, subjectData) {
             const div = document.createElement('div');
-
-            // --- THIS IS THE NEW LOGIC ---
-            // We get icon, color, and topics from the subjectData object
             const topicsArray = subjectData.topics || [];
             const topicIcon = subjectData.icon || 'book';
             const topicColor = subjectData.color || 'gray';
-            // --- END NEW LOGIC ---
-
             const topicCount = topicsArray.length;
 
             let totalCompletion = 0;
@@ -1207,21 +1159,19 @@
             });
 
             const subjectCompletion = topicCount > 0 ? Math.round(totalCompletion / topicCount) : 0;
-
             const isSubjectCompleted = topicCount > 0 && topicsArray.every(t => t.status === 'completed');
             const isSubjectInProgress = !isSubjectCompleted && topicsArray.some(t => t.status === 'in-progress' || t.status === 'completed');
 
             let status, statusInfo;
             if (isSubjectCompleted) status = 'completed';
             else if (isSubjectInProgress) status = 'in-progress';
-            else if (topicCount === 0) status = 'available'; // Empty subjects are just 'Available'
+            else if (topicCount === 0) status = 'available';
             else status = 'available';
 
             statusInfo = getStatusInfo(status);
 
             div.className = `card-hover bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 animate-fade-in group cursor-pointer`;
 
-            // The HTML is the same, but now uses the correct variables
             div.innerHTML = `
                 <div class="text-center mb-4 relative">
                     <div class="w-16 h-16 bg-${topicColor}-100 dark:bg-${topicColor}-900 rounded-lg flex items-center justify-center mx-auto mb-3">
@@ -1239,28 +1189,22 @@
                 </div>
             `;
 
-            // The click handler now just passes the topics array
             div.addEventListener('click', () => handleSubjectClick(subjectName, topicsArray));
             return div;
         }
 
         function handleSubjectClick(subjectName, topicsArray) {
-            console.log("Subject clicked:", subjectName);
-            currentTopicsArray = topicsArray; // This is already the correct topics array
+            currentTopicsArray = topicsArray;
             showTopicsList(subjectName, topicsArray);
         }
 
         function showSubjectsView() {
             document.getElementById('subjectsSection').classList.remove('hidden');
-            document.getElementById('testSection').classList.remove('hidden'); // <-- CORRECTED ID
+            document.getElementById('testSection').classList.remove('hidden');
             document.getElementById('topicsSection').classList.add('hidden');
             document.getElementById('algorithmsSection').classList.add('hidden');
-
-            // --- NEW: Hide doubt button ---
             document.getElementById('askDoubtBtn').classList.add('hidden');
         }
-
-        // --- NEW: Test Section Functions ---
 
         async function loadActiveTests() {
             const grid = document.getElementById('testsGrid');
@@ -1270,22 +1214,19 @@
                 <div class="loading-skeleton rounded-xl h-40 hidden lg:block"></div>`;
 
             try {
-                // This endpoint was added to backend/routes/test.js
                 const data = await makeAuthenticatedAPICall('/test/active');
 
-                grid.innerHTML = ''; // Clear skeletons
+                grid.innerHTML = '';
                 if (data && data.success && data.tests) {
                     if (data.tests.length === 0) {
                         grid.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 col-span-full">No active tests are available at this time.</p>';
                         return;
                     }
-                    // Get the user's attempts from the main dashboardData object
                     const userAttempts = dashboardData?.user?.testAttempts || [];
 
                     data.tests.forEach(test => {
-                        // Find if the user has an attempt for this test
                         const attempt = userAttempts.find(a => a.testId === test._id);
-                        const card = createTestCard(test, attempt); // <-- Pass the attempt (or undefined)
+                        const card = createTestCard(test, attempt);
                         grid.appendChild(card);
                     });
                 } else {
@@ -1293,13 +1234,14 @@
                 }
             } catch (error) {
                 console.error('Error loading active tests:', error);
-                grid.innerHTML = `<p class="text-center text-red-500 dark:text-red-400 col-span-full">${error.message}</p>`;
+                if (!error.message.includes("Authentication failed")) {
+                    grid.innerHTML = `<p class="text-center text-red-500 dark:text-red-400 col-span-full">Failed to load tests: ${error.message}</p>`;
+                }
             }
         }
 
-        function createTestCard(test, attempt) { // <-- Added 'attempt'
+        function createTestCard(test, attempt) {
             const div = document.createElement('div');
-
             let statusText, statusClass, statusIcon, isLocked;
 
             if (attempt?.status === 'completed') {
@@ -1315,16 +1257,15 @@
             } else if (attempt?.status === 'inprogress') {
                 statusText = 'In Progress';
                 statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300';
-                statusIcon = 'fa-play-circle'; // Or 'fa-hourglass-half'
-                isLocked = false; // Allow re-entry
+                statusIcon = 'fa-play-circle';
+                isLocked = false;
             } else {
                 statusText = 'Start Test';
-                statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 group-hover:bg-green-200 dark:group-hover:bg-green-800'; // Add hover effect
+                statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 group-hover:bg-green-200 dark:group-hover:bg-green-800';
                 statusIcon = 'fa-play-circle';
                 isLocked = false;
             }
 
-            // Added flex flex-col justify-between to make footer stick to bottom
             div.className = `card-hover bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 animate-fade-in group flex flex-col justify-between ${isLocked ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`;
 
             div.innerHTML = `
@@ -1343,9 +1284,8 @@
                 </div>
             `;
 
-            if (!isLocked) { // Only add click listener if not completed or locked
+            if (!isLocked) {
                 div.addEventListener('click', () => {
-                    // Redirect to the test player with the correct testId
                     window.location.href = `test_player.html?testId=${test._id}`;
                 });
             } else {
@@ -1354,34 +1294,27 @@
             return div;
         }
 
-        // --- LEVEL 2: TOPICS ---
-
-        // *** 2. MODIFIED THIS FUNCTION ***
         async function showTopicsList(subjectName, topicsArray) {
             const topicsSection = document.getElementById('topicsSection');
             const subjectsSection = document.getElementById('subjectsSection');
             const algorithmsSection = document.getElementById('algorithmsSection');
             const topicsGrid = document.getElementById('topicsGrid');
             const topicListTitle = document.getElementById('topicListTitle');
-            const testSection = document.getElementById('testSection'); // <-- CORRECTED ID
-
+            const testSection = document.getElementById('testSection');
+            
             const dailyChallengeContainer = document.getElementById('dailyChallengeContainer');
-            dailyChallengeContainer.innerHTML = `<div class="loading-skeleton h-24 rounded-xl"></div>`;
+            dailyChallengeContainer.innerHTML = `<div class="loading-skeleton h-24 rounded-xl"></div>`; 
 
-            // --- NEW: Subject Access Check & Button Toggle ---
             const askDoubtBtn = document.getElementById('askDoubtBtn');
-            // Check if *any* topic in the array is not locked
             const isSubjectAccessible = topicsArray.some(topic => topic.status !== 'locked');
-
+            
             if (isSubjectAccessible) {
                 askDoubtBtn.classList.remove('hidden');
-                // Store current subject/topics for the modal
-                askDoubtBtn.dataset.subjectName = subjectName;
-                askDoubtBtn.dataset.topics = JSON.stringify(topicsArray.map(t => ({ id: t.id, name: t.name })));
+                askDoubtBtn.dataset.subjectName = subjectName; 
+                askDoubtBtn.dataset.topics = JSON.stringify(topicsArray.map(t => ({id: t.id, name: t.name})));
             } else {
                 askDoubtBtn.classList.add('hidden');
             }
-            // --- END NEW ---
 
             async function loadDailyChallenge() {
                 try {
@@ -1404,18 +1337,18 @@
                             </div>
                         `;
                     } else {
-                        dailyChallengeContainer.innerHTML = ''; // Hide if no problem
+                        dailyChallengeContainer.innerHTML = '';
                     }
                 } catch (error) {
                     console.error("Error fetching daily challenge:", error);
-                    dailyChallengeContainer.innerHTML = ``; // Hide on error
+                    dailyChallengeContainer.innerHTML = ``;
                 }
             }
-
-            loadDailyChallenge();
+            
+            loadDailyChallenge(); 
 
             topicListTitle.textContent = `${subjectName} Topics`;
-            topicsGrid.innerHTML = '';
+            topicsGrid.innerHTML = ''; 
 
             if (!topicsArray || topicsArray.length === 0) {
                 topicsGrid.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 col-span-full">No topics found for this subject.</p>';
@@ -1427,7 +1360,7 @@
             }
 
             subjectsSection.classList.add('hidden');
-            testSection.classList.add('hidden'); // <-- CORRECTED ID
+            testSection.classList.add('hidden');
             algorithmsSection.classList.add('hidden');
             topicsSection.classList.remove('hidden');
         }
@@ -1464,22 +1397,12 @@
         }
 
         function handleTopicClick(topic) {
-            console.log("Topic clicked:", topic.id, "Status:", topic.status);
             if (topic.status === 'locked') {
                 showAlert('This topic is locked. Complete prerequisites to unlock it!', 'warning');
             } else {
                 showAlgorithmList(topic);
             }
         }
-
-        function showTopicsView() {
-            document.getElementById('subjectsSection').classList.add('hidden');
-            document.getElementById('testSection').classList.add('hidden'); // <-- Hide test section
-            document.getElementById('topicsSection').classList.remove('hidden');
-            document.getElementById('algorithmsSection').classList.add('hidden');
-        }
-
-        // --- LEVEL 3: ALGORITHMS ---
 
         function showAlgorithmList(topic) {
             const topicsSection = document.getElementById('topicsSection');
@@ -1495,7 +1418,7 @@
             } else {
                 topic.algorithms.forEach(algoDef => {
                     const algoProgress = topic.userAlgoProgress[algoDef.id] || { completed: false, accuracyPractice: 0, attemptsPractice: 0 };
-                    const card = createAlgorithmCard(topic, algoDef, algoProgress); // Pass the whole topic object
+                    const card = createAlgorithmCard(topic, algoDef, algoProgress);
                     algorithmsGrid.appendChild(card);
                 });
             }
@@ -1534,7 +1457,6 @@
             `;
 
             if (!isLocked) {
-                // Pass subject name, topic ID, and algorithm ID
                 div.addEventListener('click', () => handleAlgorithmClick(topic.subject, topic.id, algoDef.id));
             } else {
                 div.setAttribute('title', 'This algorithm is currently locked.');
@@ -1550,17 +1472,15 @@
             };
 
             const subjectFolder = sanitize(subjectName);
-            const topicFolder = sanitize(topicId); // topicId is usually clean (e.g., "sorting")
+            const topicFolder = sanitize(topicId);
 
-            // Build the new path: e.g., "DSA_Visualizer/sorting/bubbleSort.html"
             const filePath = `${subjectFolder}/${topicFolder}/${algorithmId}.html`;
 
-            console.log(`Navigating to: ${filePath}`);
             window.location.href = filePath;
         }
 
 
-        // --- SHARED HELPER FUNCTIONS ---
+        // --- SHARED HELPER FUNCTIONS (Kept existing code) ---
 
         function getStatusInfo(status) {
             switch (status) {
@@ -1583,23 +1503,20 @@
             }
         }
 
-        // --- REMOVED LEARNING PATH & ACHIEVEMENT FUNCTIONS ---
-
-        // Show alert
         function showAlert(message, type = 'info') {
-            alert(message); // Simple alert
+            alert(message);
         }
 
         // Redirect to auth page (Modified for Firebase)
         async function redirectToAuth() {
-            try {
-                // Use Firebase signOut
-                await auth.signOut();
-            } catch (e) {
-                console.error("Error signing out:", e);
+            if (auth) {
+                try {
+                    await auth.signOut();
+                } catch (e) {
+                    console.error("Error signing out:", e);
+                }
             }
-            localStorage.removeItem('currentUser'); // Remove cached user data
-            // authToken is now managed by Firebase
+            localStorage.removeItem('currentUser'); 
             window.location.href = 'auth.html';
         }
 
@@ -1610,23 +1527,6 @@
             }
         }
 
-        function setButtonLoading(buttonId, textElementId, spinnerElementId, isLoading = true) {
-            const button = document.getElementById(buttonId);
-            const textElement = document.getElementById(textElementId);
-            const spinnerElement = document.getElementById(spinnerElementId);
-
-            if (isLoading) {
-                button.disabled = true;
-                textElement.classList.add('hidden');
-                spinnerElement.classList.remove('hidden');
-            } else {
-                button.disabled = false;
-                textElement.classList.remove('hidden');
-                spinnerElement.classList.add('hidden');
-            }
-        }
-
-        // Create floating particles
         function createParticles() {
             const particleContainer = document.querySelector('.floating-particles');
             for (let i = 0; i < 15; i++) {
@@ -1643,7 +1543,7 @@
             }
         }
 
-        // --- NEW: DOUBT MODAL FUNCTIONS ---
+        // --- NEW/MODIFIED DOUBT MODAL FUNCTIONS (Kept existing code) ---
 
         function formatRelativeTime(dateString) {
             const date = new Date(dateString);
@@ -1664,7 +1564,7 @@
 
         function openDoubtModal() {
             document.getElementById('doubtModal').classList.add('show');
-            showDoubtList(); // Default to showing the list view
+            showDoubtList();
         }
 
         function closeDoubtModal() {
@@ -1675,24 +1575,20 @@
             document.getElementById('doubtListContainer').classList.remove('hidden');
             document.getElementById('doubtCreateContainer').classList.add('hidden');
             document.getElementById('doubtChatContainer').classList.add('hidden');
-            loadUserDoubts(); // Refresh the list every time it's shown
+            loadUserDoubts();
         }
 
         function showCreateDoubtForm() {
             document.getElementById('doubtListContainer').classList.add('hidden');
             document.getElementById('doubtCreateContainer').classList.remove('hidden');
             document.getElementById('doubtChatContainer').classList.add('hidden');
-
-            // Populate the subject dropdown based on data we already have
             populateDoubtFormSubjects();
-
-            // Pre-select the subject/topic if coming from the "Ask a Doubt" button
             const askDoubtBtn = document.getElementById('askDoubtBtn');
             const subjectName = askDoubtBtn.dataset.subjectName;
             if (subjectName) {
                 const subjectSelect = document.getElementById('doubtSubjectSelect');
                 subjectSelect.value = subjectName;
-                handleDoubtSubjectChange(); // Trigger topic dropdown population
+                handleDoubtSubjectChange();
             }
         }
 
@@ -1700,11 +1596,9 @@
             document.getElementById('doubtListContainer').classList.add('hidden');
             document.getElementById('doubtCreateContainer').classList.add('hidden');
             document.getElementById('doubtChatContainer').classList.remove('hidden');
-
             document.getElementById('userChatArea').classList.add('hidden');
             document.getElementById('userChatLoading').classList.remove('hidden');
-
-            openUserDoubtChat(threadId); // Fetch and display the chat
+            openUserDoubtChat(threadId);
         }
 
         async function loadUserDoubts() {
@@ -1712,7 +1606,7 @@
             listDiv.innerHTML = '<div class="loading-skeleton h-16 w-full rounded-lg"></div>';
             try {
                 const data = await makeDoubtAPICall('/doubts/my-threads');
-                listDiv.innerHTML = ''; // Clear skeleton
+                listDiv.innerHTML = '';
                 if (data.threads.length === 0) {
                     listDiv.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-4">You have no active doubts.</p>';
                     return;
@@ -1754,7 +1648,6 @@
                 return;
             }
 
-            // Populate subjects from dashboard data, but only if they are accessible
             Object.keys(dashboardData.subjects).forEach(subjectName => {
                 const subjectData = dashboardData.subjects[subjectName];
                 const isAccessible = subjectData.topics.some(t => t.status !== 'locked');
@@ -1780,7 +1673,6 @@
 
             const topics = dashboardData.subjects[selectedSubject].topics;
             topics.forEach(topic => {
-                // Only allow asking doubts about non-locked topics
                 if (topic.status !== 'locked') {
                     const option = new Option(topic.name, topic.id);
                     topicSelect.add(option);
@@ -1813,30 +1705,13 @@
 
                 showAlert('Doubt submitted successfully!', 'success');
                 document.getElementById('newDoubtForm').reset();
-                showDoubtList(); // Go back to the list view
+                showDoubtList();
 
             } catch (error) {
                 errorP.textContent = error.message;
             } finally {
                 setButtonLoading('submitNewDoubtBtn', 'submitDoubtBtnText', 'submitDoubtBtnSpinner', false);
             }
-        }
-
-        function formatRelativeTime(dateString) {
-            const date = new Date(dateString);
-            const now = new Date();
-            const diffMs = now - date;
-            const diffSeconds = Math.round(diffMs / 1000);
-            const diffMinutes = Math.round(diffSeconds / 60);
-            const diffHours = Math.round(diffMinutes / 60);
-            const diffDays = Math.round(diffHours / 24);
-
-            if (diffSeconds < 60) return `${diffSeconds}s ago`;
-            if (diffMinutes < 60) return `${diffMinutes}m ago`;
-            if (diffHours < 24) return `${diffHours}h ago`;
-            if (diffDays === 1) return `Yesterday`;
-            if (diffDays < 7) return `${diffDays}d ago`;
-            return date.toLocaleDateString();
         }
 
         async function openUserDoubtChat(threadId) {
@@ -1919,8 +1794,6 @@
                 `;
                     messagesContainer.appendChild(msgDiv);
                     messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-                    // If thread was resolved, re-enable the resolve button
                     const resolveBtn = document.getElementById('userResolveDoubtBtn');
                     resolveBtn.disabled = false;
                     resolveBtn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Mark as Resolved';
@@ -1958,7 +1831,7 @@
             }
         }
 
-        // --- END NEW DOUBT FUNCTIONS ---
+        // --- END DOUBT MODAL FUNCTIONS ---
 
         // Initialize everything when page loads (Modified for Firebase)
         document.addEventListener('DOMContentLoaded', async function () {
@@ -1968,18 +1841,14 @@
             // Firebase Authentication Listener is the new entry point
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
-                    // 1. User is signed in. Initialize local user object and UI.
                     initializeUser(user);
-
-                    // 2. Load dashboard data.
                     await loadDashboardData();
 
-                    // --- INITIALIZE ALL EVENT LISTENERS HERE ---
+                    // --- INITIALIZE ALL EVENT LISTENERS HERE (Only if authenticated) ---
                     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
                     document.getElementById('backToSubjectsBtn').addEventListener('click', showSubjectsView);
                     document.getElementById('backToTopicsBtn').addEventListener('click', () => showTopicsList(document.getElementById('topicListTitle').textContent.replace(' Topics', ''), currentTopicsArray));
 
-                    // Quick action buttons
                     document.getElementById('randomChallenge').addEventListener('click', () => {
                         showAlert('Random challenge feature coming soon!', 'info');
                     });
@@ -1987,8 +1856,7 @@
                     document.getElementById('viewProgress').addEventListener('click', () => {
                         showAlert('Detailed progress overview coming soon!', 'info');
                     });
-
-                    // DOUBT MODAL LISTENERS
+                    
                     document.getElementById('askDoubtBtn').addEventListener('click', openDoubtModal);
                     document.getElementById('doubtModal').addEventListener('click', (e) => {
                         if (e.target.id === 'doubtModal') closeDoubtModal();
@@ -2001,8 +1869,6 @@
                     redirectToAuth();
                 }
             });
-
-            console.log("Dashboard initialization setup complete.");
         });
     </script>
 </body>
