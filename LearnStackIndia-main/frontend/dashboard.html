@@ -848,8 +848,30 @@
     </div>
 
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script>
+        // --- FIREBASE CONFIGURATION ---
+        // !!! IMPORTANT: REPLACE WITH YOUR ACTUAL FIREBASE CONFIGURATION !!!
+        const firebaseConfig = {
+            apiKey: "AIzaSyBzc1YD81SItypZyNnfUDrgg5KAbOt6EBk",
+            authDomain: "learnstackindia-8ebf2.firebaseapp.com",
+            projectId: "learnstackindia-8ebf2",
+            storageBucket: "learnstackindia-8ebf2.firebasestorage.app",
+            messagingSenderId: "503794456350",
+            appId: "1:503794456350:web:c62a3149ed3cb1f4781b0f",
+            measurementId: "G-87QMZJR142"
+        };
+        // ------------------------------
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = app.auth();
+        const db = app.firestore();
+        // End Firebase setup
+
         // Application state
         let currentUser = null;
         let dashboardData = null;
@@ -858,18 +880,26 @@
         // API Configuration
         const API_BASE_URL = '/api';
 
-        // Utility function to get auth token
-        function getAuthToken() {
-            return localStorage.getItem('authToken');
-        }
+        // NOTE: getAuthToken is removed, Firebase handles auth state
 
         // API call with authentication
         async function makeAuthenticatedAPICall(endpoint, options = {}) {
-            const token = getAuthToken();
-            if (!token) {
+            const user = auth.currentUser;
+            if (!user) {
                 redirectToAuth();
-                throw new Error("Authentication token not found.");
+                throw new Error("User not authenticated.");
             }
+
+            let token;
+            try {
+                token = await user.getIdToken();
+            } catch (error) {
+                console.error("Error getting ID token:", error);
+                // We rely on auth.onAuthStateChanged to catch this, but hard fail here too.
+                redirectToAuth();
+                throw new Error("Failed to get authentication token.");
+            }
+
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -877,15 +907,15 @@
                     signal: controller.signal,
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${token}`, // Use the Firebase ID Token
                         ...options.headers
                     },
                     ...options
                 });
                 clearTimeout(timeoutId);
-                if (response.status === 401) {
+                if (response.status === 401 || response.status === 403) {
                     redirectToAuth();
-                    throw new Error("Authentication failed (401).");
+                    throw new Error("Authentication failed (401/403).");
                 }
                 const contentType = response.headers.get("content-type");
                 let data;
@@ -911,11 +941,21 @@
 
         // --- NEW: API Helper for /api/doubts ---
         async function makeDoubtAPICall(endpoint, options = {}) {
-            const token = getAuthToken();
-            if (!token) {
+            const user = auth.currentUser;
+            if (!user) {
                 redirectToAuth();
-                throw new Error("Authentication token not found.");
+                throw new Error("User not authenticated.");
             }
+
+            let token;
+            try {
+                token = await user.getIdToken();
+            } catch (error) {
+                console.error("Error getting ID token for doubt API:", error);
+                redirectToAuth();
+                throw new Error("Failed to get authentication token.");
+            }
+
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -923,15 +963,15 @@
                     signal: controller.signal,
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${token}`, // Use the Firebase ID Token
                         ...options.headers
                     },
                     ...options
                 });
                 clearTimeout(timeoutId);
-                if (response.status === 401) {
+                if (response.status === 401 || response.status === 403) {
                     redirectToAuth();
-                    throw new Error("Authentication failed (401).");
+                    throw new Error("Authentication failed (401/403).");
                 }
                 const data = await response.json();
                 if (!response.ok) {
@@ -967,20 +1007,28 @@
             }
         }
 
-        // Initialize user data from localStorage
-        function initializeUser() {
+        // Initialize user data (Modified for Firebase)
+        function initializeUser(user) {
             const userData = localStorage.getItem('currentUser');
+            let name = user.displayName || user.email;
+
             if (userData) {
                 try {
                     currentUser = JSON.parse(userData);
-                    document.getElementById('welcomeText').textContent = `Welcome, ${currentUser.username}`;
-                    document.getElementById('userInitial').textContent = currentUser.username.charAt(0).toUpperCase();
+                    // Prioritize cached username if it exists
+                    name = currentUser.username || user.displayName || user.email;
                 } catch (error) {
-                    redirectToAuth();
+                    // Stale/bad local storage, rely on Firebase user
+                    currentUser = { username: user.displayName, email: user.email, uid: user.uid };
                 }
             } else {
-                redirectToAuth();
+                // No local storage cache, rely on Firebase user info
+                currentUser = { username: user.displayName, email: user.email, uid: user.uid };
             }
+
+            // Update UI
+            document.getElementById('welcomeText').textContent = `Welcome, ${name.split('@')[0]}`; // Clean up email display
+            document.getElementById('userInitial').textContent = name.charAt(0).toUpperCase();
         }
 
         // Fetch dashboard data
@@ -988,6 +1036,7 @@
             showSkeletonLoaders();
             try {
                 console.log('🔄 Fetching dashboard data...');
+                // Uses makeAuthenticatedAPICall which gets the Firebase ID token
                 dashboardData = await makeAuthenticatedAPICall('/auth/dashboard');
                 if (dashboardData) {
                     console.log('✅ Dashboard data loaded:', dashboardData);
@@ -1036,8 +1085,15 @@
             const rank = stats.rank || {};
             const subjectsData = data?.subjects || {}; // Use subjects data
 
-            document.getElementById('welcomeText').textContent = `Welcome, ${user.username || 'User'}`;
-            document.getElementById('userInitial').textContent = (user.username || 'U').charAt(0).toUpperCase();
+            // Re-run initializeUser to ensure UI is updated with potentially fresher data
+            // NOTE: We pass the loaded user data object instead of the Firebase object
+            const loadedUser = {
+                username: user.username,
+                email: user.email,
+                uid: auth.currentUser.uid
+            };
+            initializeUser(loadedUser);
+
 
             // Personal Stats
             document.getElementById('learningProgress').textContent = `${stats.overallProgress ?? 0}%`;
@@ -1199,7 +1255,7 @@
             document.getElementById('testSection').classList.remove('hidden'); // <-- CORRECTED ID
             document.getElementById('topicsSection').classList.add('hidden');
             document.getElementById('algorithmsSection').classList.add('hidden');
-            
+
             // --- NEW: Hide doubt button ---
             document.getElementById('askDoubtBtn').classList.add('hidden');
         }
@@ -1308,20 +1364,20 @@
             const topicsGrid = document.getElementById('topicsGrid');
             const topicListTitle = document.getElementById('topicListTitle');
             const testSection = document.getElementById('testSection'); // <-- CORRECTED ID
-            
+
             const dailyChallengeContainer = document.getElementById('dailyChallengeContainer');
-            dailyChallengeContainer.innerHTML = `<div class="loading-skeleton h-24 rounded-xl"></div>`; 
+            dailyChallengeContainer.innerHTML = `<div class="loading-skeleton h-24 rounded-xl"></div>`;
 
             // --- NEW: Subject Access Check & Button Toggle ---
             const askDoubtBtn = document.getElementById('askDoubtBtn');
             // Check if *any* topic in the array is not locked
             const isSubjectAccessible = topicsArray.some(topic => topic.status !== 'locked');
-            
+
             if (isSubjectAccessible) {
                 askDoubtBtn.classList.remove('hidden');
                 // Store current subject/topics for the modal
-                askDoubtBtn.dataset.subjectName = subjectName; 
-                askDoubtBtn.dataset.topics = JSON.stringify(topicsArray.map(t => ({id: t.id, name: t.name})));
+                askDoubtBtn.dataset.subjectName = subjectName;
+                askDoubtBtn.dataset.topics = JSON.stringify(topicsArray.map(t => ({ id: t.id, name: t.name })));
             } else {
                 askDoubtBtn.classList.add('hidden');
             }
@@ -1355,11 +1411,11 @@
                     dailyChallengeContainer.innerHTML = ``; // Hide on error
                 }
             }
-            
-            loadDailyChallenge(); 
+
+            loadDailyChallenge();
 
             topicListTitle.textContent = `${subjectName} Topics`;
-            topicsGrid.innerHTML = ''; 
+            topicsGrid.innerHTML = '';
 
             if (!topicsArray || topicsArray.length === 0) {
                 topicsGrid.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 col-span-full">No topics found for this subject.</p>';
@@ -1534,17 +1590,23 @@
             alert(message); // Simple alert
         }
 
-        // Redirect to auth page
-        function redirectToAuth() {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('currentUser');
+        // Redirect to auth page (Modified for Firebase)
+        async function redirectToAuth() {
+            try {
+                // Use Firebase signOut
+                await auth.signOut();
+            } catch (e) {
+                console.error("Error signing out:", e);
+            }
+            localStorage.removeItem('currentUser'); // Remove cached user data
+            // authToken is now managed by Firebase
             window.location.href = 'auth.html';
         }
 
-        // Handle logout
-        function handleLogout() {
+        // Handle logout (Modified for Firebase)
+        async function handleLogout() {
             if (confirm('Are you sure you want to logout?')) {
-                redirectToAuth();
+                await redirectToAuth();
             }
         }
 
@@ -1898,46 +1960,51 @@
 
         // --- END NEW DOUBT FUNCTIONS ---
 
-        // Initialize everything when page loads
+        // Initialize everything when page loads (Modified for Firebase)
         document.addEventListener('DOMContentLoaded', async function () {
-            window.addEventListener('pageshow', function (event) {
-                if (!getAuthToken()) { redirectToAuth(); }
-            });
-            const token = getAuthToken();
-            if (!token) { redirectToAuth(); return; }
-
             initializeTheme();
-            initializeUser();
             createParticles();
 
-            await loadDashboardData();
+            // Firebase Authentication Listener is the new entry point
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    // 1. User is signed in. Initialize local user object and UI.
+                    initializeUser(user);
 
-            // Event listeners
-            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-            document.getElementById('backToSubjectsBtn').addEventListener('click', showSubjectsView);
-            document.getElementById('backToTopicsBtn').addEventListener('click', () => showTopicsList(document.getElementById('topicListTitle').textContent.replace(' Topics', ''), currentTopicsArray));
+                    // 2. Load dashboard data.
+                    await loadDashboardData();
 
-            // Quick action buttons
-            document.getElementById('randomChallenge').addEventListener('click', () => {
-                showAlert('Random challenge feature coming soon!', 'info');
+                    // --- INITIALIZE ALL EVENT LISTENERS HERE ---
+                    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+                    document.getElementById('backToSubjectsBtn').addEventListener('click', showSubjectsView);
+                    document.getElementById('backToTopicsBtn').addEventListener('click', () => showTopicsList(document.getElementById('topicListTitle').textContent.replace(' Topics', ''), currentTopicsArray));
+
+                    // Quick action buttons
+                    document.getElementById('randomChallenge').addEventListener('click', () => {
+                        showAlert('Random challenge feature coming soon!', 'info');
+                    });
+
+                    document.getElementById('viewProgress').addEventListener('click', () => {
+                        showAlert('Detailed progress overview coming soon!', 'info');
+                    });
+
+                    // DOUBT MODAL LISTENERS
+                    document.getElementById('askDoubtBtn').addEventListener('click', openDoubtModal);
+                    document.getElementById('doubtModal').addEventListener('click', (e) => {
+                        if (e.target.id === 'doubtModal') closeDoubtModal();
+                    });
+                    document.getElementById('doubtSubjectSelect').addEventListener('change', handleDoubtSubjectChange);
+                    document.getElementById('newDoubtForm').addEventListener('submit', submitNewDoubt);
+
+                } else {
+                    // User is signed out. Redirect to auth page.
+                    redirectToAuth();
+                }
             });
 
-            document.getElementById('viewProgress').addEventListener('click', () => {
-                showAlert('Detailed progress overview coming soon!', 'info');
-            });
-            // --- NEW DOUBT MODAL LISTENERS ---
-            document.getElementById('askDoubtBtn').addEventListener('click', openDoubtModal);
-            document.getElementById('doubtModal').addEventListener('click', (e) => {
-                if (e.target.id === 'doubtModal') closeDoubtModal();
-            });
-            document.getElementById('doubtSubjectSelect').addEventListener('change', handleDoubtSubjectChange);
-            document.getElementById('newDoubtForm').addEventListener('submit', submitNewDoubt);
-            // --- END NEW LISTENERS ---
-
-            console.log("Dashboard initialized.");
+            console.log("Dashboard initialization setup complete.");
         });
     </script>
 </body>
 
 </html>
-
