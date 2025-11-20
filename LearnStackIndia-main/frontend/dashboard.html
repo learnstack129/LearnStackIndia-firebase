@@ -1843,7 +1843,7 @@
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
                     initializeUser(user);
-                    await loadDashboardData();
+                    await loadDashboardData(); // <--- This calls makeAuthenticatedAPICall which contains necessary redirectToAuth on 401/403/404
 
                     // --- INITIALIZE ALL EVENT LISTENERS HERE (Only if authenticated) ---
                     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
@@ -1865,14 +1865,12 @@
                     document.getElementById('doubtSubjectSelect').addEventListener('change', handleDoubtSubjectChange);
                     document.getElementById('newDoubtForm').addEventListener('submit', submitNewDoubt);
 
-                } else {
-                    // User is signed out. Redirect to auth page.
-                    redirectToAuth();
-                }
+                } // REMOVE the redundant 'else' block which causes the race condition
             });
         });
     </script>
 </body>
 
 </html>
+
 
